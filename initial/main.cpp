@@ -1,5 +1,5 @@
 #include "RopeTextBuffer.h"
-
+#include <functional>
 #ifdef _WIN32
 #include <crtdbg.h>
 #endif
@@ -11,6 +11,17 @@
 #define COLOR_RESET "\033[0m"
 
 static int countOfPassedTests = 0;
+static int countOfTestInSample = 0;
+
+void evaluateTests(int numOfTests)
+{
+    if (countOfTestInSample == numOfTests)
+    {
+        countOfPassedTests++;
+    }
+
+    countOfTestInSample = 0;
+}
 
 template <typename T>
 void assertEqual(const T &actual, const T &expected, int testNum, const string &msg = "")
@@ -21,7 +32,7 @@ void assertEqual(const T &actual, const T &expected, int testNum, const string &
         if (!msg.empty())
             cout << " - " << msg;
         cout << endl;
-        countOfPassedTests++;
+        countOfTestInSample++;
     }
     else
     {
@@ -45,6 +56,18 @@ void assertEqual(const char *actual, const char *expected, int testNum, const st
     assertEqual<string>(string(actual), string(expected), testNum, msg);
 }
 
+string captureOutput(std::function<void()> func)
+{
+    std::stringstream buffer;
+    std::streambuf *oldCout = std::cout.rdbuf();
+    std::cout.rdbuf(buffer.rdbuf());
+
+    func();
+
+    std::cout.rdbuf(oldCout);
+    return buffer.str();
+}
+
 /*---------------------------------------- Test cua thay ----------------------------------------
 -----------------------------------------------------------------------------------------------*/
 void sample_01()
@@ -52,7 +75,8 @@ void sample_01()
     // Test basic Rope construction and empty state
     Rope rope;
     assertEqual(rope.empty(), true, 1, "Empty state");
-    assertEqual(rope.length(), 0, 2, "Length");
+    assertEqual(rope.length(), 0, 1, "Length");
+    evaluateTests(2);
 }
 
 void sample_02()
@@ -60,8 +84,9 @@ void sample_02()
     // Test basic Rope insert and toString
     Rope rope;
     rope.insert(0, "Hello");
-    assertEqual(rope.toString(), "Hello", 3, "Basic insert and toString");
-    assertEqual(rope.length(), 5, 4, "Length");
+    assertEqual(rope.toString(), "Hello", 2, "Basic insert and toString");
+    assertEqual(rope.length(), 5, 2, "Length");
+    evaluateTests(2);
 }
 
 void sample_03()
@@ -69,8 +94,9 @@ void sample_03()
     // Test Rope charAt operation
     Rope rope;
     rope.insert(0, "ABC");
-    assertEqual(rope.charAt(1), 'B', 5, "charAt(1) should return 'B'");
-    assertEqual(rope.charAt(0), 'A', 6, "charAt(0) should return 'A'");
+    assertEqual(rope.charAt(1), 'B', 3, "charAt(1) should return 'B'");
+    assertEqual(rope.charAt(0), 'A', 3, "charAt(0) should return 'A'");
+    evaluateTests(2);
 }
 
 void sample_04()
@@ -78,8 +104,9 @@ void sample_04()
     // Test RopeTextBuffer basic operations
     RopeTextBuffer tb;
     tb.insert("Hello");
-    assertEqual(tb.getContent(), "Hello", 7, "TextBuffer insert");
-    assertEqual(tb.getCursorPos(), 5, 8, "Cursor position");
+    assertEqual(tb.getContent(), "Hello", 4, "TextBuffer insert");
+    assertEqual(tb.getCursorPos(), 5, 4, "Cursor position");
+    evaluateTests(2);
 }
 
 void sample_05()
@@ -89,8 +116,9 @@ void sample_05()
     tb.insert("ABC");
     tb.moveCursorLeft();
     tb.insert("X");
-    assertEqual(tb.getContent(), "ABXC", 9, "Content insert when moving cursor");
-    assertEqual(tb.getCursorPos(), 3, 10, "Cursor position");
+    assertEqual(tb.getContent(), "ABXC", 5, "Content insert when moving cursor");
+    assertEqual(tb.getCursorPos(), 3, 5, "Cursor position");
+    evaluateTests(2);
 }
 
 void sample_06()
@@ -100,14 +128,19 @@ void sample_06()
     tb.insert("Hello");
     tb.moveCursorTo(2);
     tb.deleteRange(2);
-    assertEqual(tb.getContent(), "heo", 11, "Content delete after moving cursor");
-    assertEqual(tb.getCursorPos(), 2, 12, "Cursor position");
+    assertEqual(tb.getContent(), "Heo", 6, "Content delete after moving cursor");
+    assertEqual(tb.getCursorPos(), 2, 6, "Cursor position");
+    string historyOutput = captureOutput([&tb]()
+                                         { tb.printHistory(); });
+
+    string expectedHistory = "[(insert, 0, 5, Hello), (move, 5, 2, J), (delete, 2, 2, ll)]\n";
+    assertEqual(historyOutput, expectedHistory, 6, "History output");
+    evaluateTests(3);
 }
 
 void sample_07()
 {
     // Test cursor error exception
-    cout << "Test 13: Testing cursor_error exception" << endl;
     RopeTextBuffer tb;
     tb.insert("ABC");
     bool caught = false;
@@ -120,7 +153,8 @@ void sample_07()
     {
         caught = true;
     }
-    assertEqual(caught, true, 13, "Raise cursor_error");
+    assertEqual(caught, true, 7, "Raise cursor_error");
+    evaluateTests(1);
 }
 
 void sample_08()
@@ -131,9 +165,23 @@ void sample_08()
     tb.insert("!!");
     tb.moveCursorLeft();
     tb.deleteRange(1);
-    assertEqual(tb.getContent(), "Hi!", 14, "Content");
-    assertEqual(tb.getCursorPos(), 3, 15, "Cursor position");
-    tb.printHistory();
+    assertEqual(tb.getContent(), "Hi!", 8, "Content");
+    assertEqual(tb.getCursorPos(), 3, 8, "Cursor position");
+    string historyOutput = captureOutput([&tb]()
+                                         { tb.printHistory(); });
+
+    string expectedHistory = "[(insert, 0, 2, Hi), (insert, 2, 4, !!), (move, 4, 3, L), (delete, 3, 3, !)]\n";
+    assertEqual(historyOutput, expectedHistory, 8, "History output");
+    evaluateTests(3);
+}
+
+void sample_09()
+{
+
+    Rope rope;
+    rope.insert(0, "Hello_world");
+    string result = rope.traversePreOrder();
+    cout << "PreOrder traversal: " << result << endl;
 }
 
 void run_tests()
@@ -148,10 +196,11 @@ void run_tests()
     sample_06();
     sample_07();
     sample_08();
+    sample_09();
 
     cout << "=" << string(50, '=') << endl;
     cout << COLOR_PURPLE << "All tests completed!" << COLOR_RESET << endl;
-    cout << "You have passed " << COLOR_GREEN << countOfPassedTests << COLOR_RESET << "/" << 15 << " tests!" << endl;
+    cout << "You have passed " << COLOR_GREEN << countOfPassedTests << COLOR_RESET << "/" << 9 << " testcases!" << endl;
 }
 
 int main(int argc, char **argv)

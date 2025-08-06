@@ -58,15 +58,6 @@ private:
 
             return true;
         };
-
-        // public:
-        // int getHeight() const { return this->height; }
-        // int getWeight() const { return this->weight; }
-        // string getData() const { return this->data; }
-        // void setHeight(int height) { this->height = height; }
-        // void setWeight(int weight) { this->weight = weight; }
-        // void setBalance(BalanceFactor balance) { this->balance = balance; }
-        // BalanceFactor getBalance() { return this->balance; }
         friend class Rope;
     };
 
@@ -82,6 +73,7 @@ private:
     Node *concatNodes(Node *left, Node *right);
     char charAt(Node *node, int index) const;
     string toString(Node *node) const;
+    string traversePreOrder(Node *node, string &result) const;
     void destroy(Node *&node);
 
 public:
@@ -95,6 +87,14 @@ public:
     void insert(int index, const string &s);
     void deleteRange(int start, int length);
     string toString() const;
+    string traversePreOrder() const; 
+    Node *getLeft() const { return root->left; }
+    Node *getRight() const { return root->right; }
+    string getData() const { return root->data; }
+    int getWeight() const { return root->weight; }
+    int getHeight() const { return root->height; }
+    void setLeft(Node *l) { root->left = l; }
+    void setRight(Node *r) { root->right = r; }
 
 #ifdef TESTING
     friend class TestHelper;
@@ -128,6 +128,7 @@ public:
     void undo();
     void redo();
     void printHistory() const;
+    void clear();
 #ifdef TESTING
     friend class TestHelper;
 #endif
