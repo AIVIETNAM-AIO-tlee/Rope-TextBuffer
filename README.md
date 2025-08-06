@@ -53,9 +53,23 @@ Handles:
 
 ---
 
-## 🛠 Compilation
+## 🏷️ Compilation
 
-Use the following command in terminal to compile the project:
+**📋 Instructions:**
 
+1️⃣ **Navigate to the project directory:**
+```bash
+cd path/to/Rope-TextBuffer-master
+```
+
+2️⃣ **Compile the project:**
 ```bash
 g++ -o main main.cpp RopeTextBuffer.cpp -I . -std=c++17
+```
+
+3️⃣ **Run the application:**
+```bash
+./main
+```
+
+🎉 **Enjoy testing your Text Buffer implementation!**
