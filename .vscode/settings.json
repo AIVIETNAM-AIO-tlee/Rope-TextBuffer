@@ -6,6 +6,8 @@
         "initializer_list": "cpp",
         "ranges": "cpp",
         "span": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "optional": "cpp",
+        "variant": "cpp"
     }
 }

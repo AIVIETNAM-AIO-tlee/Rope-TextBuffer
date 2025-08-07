@@ -4,6 +4,12 @@ void throwOutOfIndex()
 {
     throw out_of_range("Index is invalid!");
 }
+
+void throwOutOfLength()
+{
+    throw out_of_range("Length is invalid!");
+}
+
 // ----------------- DoublyLinkedList -----------------
 Rope::Rope()
 {
@@ -63,31 +69,22 @@ void Rope::insert(int index, const string &s)
         throwOutOfIndex();
     }
 
-    Node *insertRoot = nullptr;
-    for (int i = 0; i < s.length(); i += Rope::getChunkSize())
+    Node *R1, *R2;
+    split(root, index, R1, R2);
+    for (int i = 0; i < (int)s.length(); i += Rope::getChunkSize())
     {
         string chunk = s.substr(i, min(Rope::getChunkSize(), (int)s.length() - i));
         Node *chunkNode = new Node(chunk);
-        insertRoot = concatNodes(insertRoot, chunkNode);
+        R1 = concatNodes(R1, chunkNode);
     }
-
-    if (root == nullptr)
-    {
-        root = insertRoot;
-        return;
-    }
-
-    Node *left, *right;
-    split(root, index, left, right);
-
-    root = concatNodes(concatNodes(left, insertRoot), right);
+    root = concatNodes(R1, R2);
 }
 
 void Rope::deleteRange(int start, int length)
 {
-    if (start < 0 || start >= this->length() || length <= 0)
+    if (start < 0 || start >= this->length())
     {
-        throwOutOfIndex();
+        throwOutOfLength();
     }
 
     int end = min(start + length, this->length());
@@ -122,7 +119,15 @@ string Rope::traversePreOrder() const
     {
         return result;
     }
-    return traversePreOrder(root, result);
+
+    traversePreOrder(root, result);
+
+    if (!result.empty() && result.back() == ' ')
+    {
+        result.pop_back();
+    }
+
+    return result;
 }
 
 string Rope::traversePreOrder(Node *node, string &result) const
@@ -186,6 +191,7 @@ void Rope::update(Node *node)
         node->weight = node->data.length();
         node->height = 1;
         node->balance = Node::EH;
+        return;
     }
 
     int leftHeight = height(node->left);
@@ -443,7 +449,7 @@ void RopeTextBuffer::deleteRange(int length)
         return;
     }
 
-    if (cursorPos < length || cursorPos > rope.length())
+    if (length > rope.length())
     {
         throwOutOfIndex();
     }
@@ -464,9 +470,9 @@ void RopeTextBuffer::deleteRange(int length)
 
 void RopeTextBuffer::replace(int length, const string &s)
 {
-    if (length < 0 || cursorPos + length > rope.length())
+    if (length < 0 || length > s.length())
     {
-        throwOutOfIndex();
+        throwOutOfLength();
     }
 
     int startPos = cursorPos;
@@ -484,7 +490,8 @@ void RopeTextBuffer::replace(int length, const string &s)
     action.actionName = "replace";
     action.cursorBefore = startPos;
     action.cursorAfter = cursorPos;
-    action.data = oldData + s;
+    action.data = s;
+    this->oldData = oldData;
     history->addAction(action);
 }
 
@@ -530,7 +537,7 @@ void RopeTextBuffer::moveCursorLeft()
 
 void RopeTextBuffer::moveCursorRight()
 {
-    if (cursorPos >= rope.length() - 1)
+    if (cursorPos >= rope.length())
     {
         throw cursor_error();
     }
@@ -582,10 +589,14 @@ int *RopeTextBuffer::findAll(char c) const
         }
     }
 
-    int *result = new int[count + 1];
-    result[0] = count;
+    if (count == 0)
+    {
+        return nullptr;
+    }
 
-    int index = 1;
+    int *result = new int[count];
+    int index = 0;
+
     for (int i = 0; i < (int)content.length(); i++)
     {
         if (content[i] == c)
@@ -617,16 +628,16 @@ void RopeTextBuffer::undo()
     }
     else if (actionToUndo.actionName == "replace")
     {
-        string oldData = actionToUndo.data.substr(0, actionToUndo.data.length() - actionToUndo.data.length());
-        string newData = actionToUndo.data.substr(actionToUndo.data.length() - actionToUndo.data.length());
-        rope.deleteRange(actionToUndo.cursorBefore, newData.length());
-        rope.insert(actionToUndo.cursorBefore, oldData);
+        rope.deleteRange(actionToUndo.cursorBefore, actionToUndo.data.length());
+        rope.insert(actionToUndo.cursorBefore, this->oldData);
         cursorPos = actionToUndo.cursorBefore;
     }
     else if (actionToUndo.actionName == "move")
     {
         cursorPos = actionToUndo.cursorBefore;
     }
+    // Move current pointer back
+    history->current = history->current->prev;
 }
 
 void RopeTextBuffer::redo()
@@ -636,7 +647,15 @@ void RopeTextBuffer::redo()
         return;
     }
 
-    history->current = history->current->next;
+    if (history->current == nullptr)
+    {
+        history->current = history->actionHead;
+    }
+    else
+    {
+        history->current = history->current->next;
+    }
+
     HistoryManager::Action actionToRedo = history->current->action;
 
     if (actionToRedo.actionName == "insert")
@@ -651,10 +670,8 @@ void RopeTextBuffer::redo()
     }
     else if (actionToRedo.actionName == "replace")
     {
-        string oldData = actionToRedo.data.substr(0, actionToRedo.data.length() - actionToRedo.data.length());
-        string newData = actionToRedo.data.substr(actionToRedo.data.length() - actionToRedo.data.length());
-        rope.deleteRange(actionToRedo.cursorBefore, oldData.length());
-        rope.insert(actionToRedo.cursorBefore, newData);
+        rope.deleteRange(actionToRedo.cursorBefore, this->oldData.length());
+        rope.insert(actionToRedo.cursorBefore, actionToRedo.data);
         cursorPos = actionToRedo.cursorAfter;
     }
     else if (actionToRedo.actionName == "move")
@@ -706,7 +723,7 @@ RopeTextBuffer::HistoryManager::~HistoryManager()
 // TODO: implement other methods of HistoryManager
 void RopeTextBuffer::HistoryManager::addAction(const Action &a)
 {
-    clearRedoHistory();
+    // Don't clear redo history - keep all actions in history
     Node *newNode = new Node(a);
     if (actionHead == nullptr)
     {
@@ -725,20 +742,16 @@ void RopeTextBuffer::HistoryManager::addAction(const Action &a)
 
 bool RopeTextBuffer::HistoryManager::canUndo() const
 {
-    if (current && current->prev)
+    if (current == nullptr)
     {
-        return true;
+        return false;
     }
-    return false;
+    return true;
 }
 
 bool RopeTextBuffer::HistoryManager::canRedo() const
 {
-    if (current && current->next)
-    {
-        return true;
-    }
-    return false;
+    return (current && current->next) || (current == nullptr && actionHead != nullptr);
 }
 
 void RopeTextBuffer::HistoryManager::printHistory() const
@@ -756,24 +769,4 @@ void RopeTextBuffer::HistoryManager::printHistory() const
     }
     historyStr += "]";
     cout << historyStr << endl;
-}
-
-void RopeTextBuffer::HistoryManager::clearRedoHistory()
-{
-    if (current == nullptr)
-    {
-        return;
-    }
-
-    Node *nodeToDelete = current->next;
-    while (nodeToDelete != nullptr)
-    {
-        Node *temp = nodeToDelete;
-        nodeToDelete = nodeToDelete->next;
-        delete temp;
-        actionCount--;
-    }
-
-    current->next = nullptr;
-    actionTail = current;
 }

@@ -87,14 +87,10 @@ public:
     void insert(int index, const string &s);
     void deleteRange(int start, int length);
     string toString() const;
-    string traversePreOrder() const; 
-    Node *getLeft() const { return root->left; }
-    Node *getRight() const { return root->right; }
-    string getData() const { return root->data; }
-    int getWeight() const { return root->weight; }
-    int getHeight() const { return root->height; }
-    void setLeft(Node *l) { root->left = l; }
-    void setRight(Node *r) { root->right = r; }
+
+    // ------------------------
+
+    string traversePreOrder() const;
 
 #ifdef TESTING
     friend class TestHelper;
@@ -110,6 +106,7 @@ private:
     Rope rope;
     int cursorPos;
     HistoryManager *history;
+    string oldData;
 
 public:
     RopeTextBuffer();
@@ -171,7 +168,6 @@ public:
     bool canUndo() const;
     bool canRedo() const;
     void printHistory() const;
-    void clearRedoHistory();
     friend class RopeTextBuffer;
 #ifdef TESTING
     friend class TestHelper;
