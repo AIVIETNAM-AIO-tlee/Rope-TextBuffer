@@ -455,9 +455,46 @@ void sample_23()
     evaluateTests(10);
 }
 
+void sample_24()
+{
+    RopeTextBuffer tb;
+    tb.insert("A");
+    tb.insert("CSE");
+    tb.insert("HCMUT");
+    tb.moveCursorLeft();
+    tb.insert("123");
+    tb.moveCursorTo(4);
+    tb.deleteRange(3);
+    string output = tb.getContent();
+    assertEqual(output, "ACSEU123T", 24.1, "Content after operations");
+    assertEqual(tb.getCursorPos(), 4, 24.2, "Cursor position after operations");
+    tb.undo();
+    assertEqual(tb.getContent(), "ACSEHCMU123T", 24.3, "Content after undo");
+    assertEqual(tb.getCursorPos(), 4, 24.4, "Cursor position after undo");
+    tb.undo();
+    assertEqual(tb.getCursorPos(), 11, 24.5, "Cursor position after second undo");
+    tb.undo();
+    assertEqual(tb.getContent(), "ACSEHCMUT", 24.6, "Content after second undo");
+    assertEqual(tb.getCursorPos(), 8, 24.7, "Cursor position after second undo");
+    tb.redo();
+    assertEqual(tb.getContent(), "ACSEHCMU123T", 24.8, "Content after redo");
+    assertEqual(tb.getCursorPos(), 11, 24.9, "Cursor position after redo");
+    tb.redo();
+    assertEqual(tb.getContent(), "ACSEHCMU123T", 24.10, "Content after second redo");
+    assertEqual(tb.getCursorPos(), 4, 24.11, "Cursor position after second redo");
+    tb.redo();
+    assertEqual(tb.getContent(), "ACSEU123T", 24.12, "Content after third redo");
+    assertEqual(tb.getCursorPos(), 4, 24.13, "Cursor position after third redo");
+    string historyOutput = captureOutput([&tb]()
+                                         { tb.printHistory(); });
+    string expectedHistory = "[(insert, 0, 1, A), (insert, 1, 4, CSE), (insert, 4, 9, HCMUT), (move, 9, 8, L), (insert, 8, 11, 123), (move, 11, 4, J), (delete, 4, 4, HCM)]\n";
+    assertEqual(historyOutput, expectedHistory, 24.14, "History output after operations");
+    evaluateTests(2);
+}
+
 // 1 test for HistoryManager
 
-void sample_24()
+void sample_25()
 {
     RopeTextBuffer::HistoryManager hm;
     RopeTextBuffer::HistoryManager::Action action1 = {"insert", 0, 5, "Hello"};
@@ -467,7 +504,7 @@ void sample_24()
     string historyOutput = captureOutput([&hm]()
                                          { hm.printHistory(); });
     string expectedHistory = "[(insert, 0, 5, Hello), (insert, 5, 10, World)]\n";
-    assertEqual(historyOutput, expectedHistory, 24.1, "History output after two actions");
+    assertEqual(historyOutput, expectedHistory, 25.1, "History output after two actions");
     evaluateTests(1);
 }
 
@@ -499,6 +536,7 @@ void run_tests()
     sample_22();
     sample_23();
     sample_24();
+    sample_25();
 
     cout << "=" << string(50, '=') << endl;
     cout << COLOR_PURPLE << "All tests completed!" << COLOR_RESET << endl;
