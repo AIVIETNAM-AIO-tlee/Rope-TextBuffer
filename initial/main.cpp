@@ -489,7 +489,7 @@ void sample_24()
                                          { tb.printHistory(); });
     string expectedHistory = "[(insert, 0, 1, A), (insert, 1, 4, CSE), (insert, 4, 9, HCMUT), (move, 9, 8, L), (insert, 8, 11, 123), (move, 11, 4, J), (delete, 4, 4, HCM)]\n";
     assertEqual(historyOutput, expectedHistory, 24.14, "History output after operations");
-    evaluateTests(2);
+    evaluateTests(14);
 }
 
 // 1 test for HistoryManager
@@ -540,7 +540,7 @@ void run_tests()
 
     cout << "=" << string(50, '=') << endl;
     cout << COLOR_PURPLE << "All tests completed!" << COLOR_RESET << endl;
-    cout << "You have passed " << COLOR_GREEN << countOfPassedTests << COLOR_RESET << "/" << 24 << " testcases!" << endl;
+    cout << "You have passed " << COLOR_GREEN << countOfPassedTests << COLOR_RESET << "/" << 25 << " testcases!" << endl;
 }
 
 int main(int argc, char **argv)
