@@ -8,6 +8,9 @@
         "span": "cpp",
         "sstream": "cpp",
         "optional": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "exception": "cpp",
+        "iomanip": "cpp",
+        "iosfwd": "cpp"
     }
 }

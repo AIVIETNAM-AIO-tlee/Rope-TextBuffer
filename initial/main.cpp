@@ -743,6 +743,7 @@ void sample_28()
         caught = e.what();
     }
     assertEqual(caught, "Index is invalid!", 28.1, "Insert at invalid index throws exception");
+    evaluateTests(1);
 }
 
 void sample_29()
@@ -769,6 +770,565 @@ void sample_29()
         caught = e.what();
     }
     assertEqual(caught, "Length is invalid!", 29.2, "Substring at invalid index throws exception");
+    evaluateTests(2);
+}
+
+void sample_30()
+{
+    RopeTextBuffer::HistoryManager hm;
+
+    string historyOutput = captureOutput([&hm]()
+                                         { hm.printHistory(); });
+    string expectedHistory = "[]\n";
+    assertEqual(historyOutput, expectedHistory, 30.1, "Empty history output");
+
+    hm.addAction({"insert", 0, 1, "A"});
+    hm.addAction({"delete", 1, 1, "B"});
+    hm.addAction({"move", 1, 0, "L"});
+    hm.addAction({"move", 0, 1, "R"});
+    hm.addAction({"insert", 0, 1, "A"});
+    hm.addAction({"move", 1, 5, "J"});
+    hm.addAction({"replace", 5, 10, "old_string"});
+
+    historyOutput = captureOutput([&hm]()
+                                  { hm.printHistory(); });
+    expectedHistory = "[(insert, 0, 1, A), (delete, 1, 1, B), (move, 1, 0, L), (move, 0, 1, R), (insert, 0, 1, A), (move, 1, 5, J), (replace, 5, 10, old_string)]\n";
+    assertEqual(historyOutput, expectedHistory, 30.2, "History output after adding actions");
+    evaluateTests(2);
+}
+
+void sample_31()
+{
+    RopeTextBuffer ropeTextBuffer;
+
+    ropeTextBuffer.insert("A");
+    ropeTextBuffer.insert("CSE");
+    ropeTextBuffer.insert("HCMUT");
+    ropeTextBuffer.moveCursorLeft();
+    ropeTextBuffer.insert("123");
+    ropeTextBuffer.moveCursorTo(4);
+    ropeTextBuffer.deleteRange(3);
+    assertEqual(ropeTextBuffer.getContent(), "ACSEU123T", 31.1, "Content after operations");
+    assertEqual(ropeTextBuffer.getCursorPos(), 4, 31.2, "Cursor position after operations");
+
+    string historyOutput = captureOutput([&ropeTextBuffer]()
+                                         { ropeTextBuffer.printHistory(); });
+
+    string expectedHistory = "[(insert, 0, 1, A), (insert, 1, 4, CSE), (insert, 4, 9, HCMUT), (move, 9, 8, L), (insert, 8, 11, 123), (move, 11, 4, J), (delete, 4, 4, HCM)]\n";
+    assertEqual(historyOutput, expectedHistory, 31.3, "History output after operations");
+
+    ropeTextBuffer.undo();
+
+    historyOutput = captureOutput([&ropeTextBuffer]()
+                                  { ropeTextBuffer.printHistory(); });
+    expectedHistory = "[(insert, 0, 1, A), (insert, 1, 4, CSE), (insert, 4, 9, HCMUT), (move, 9, 8, L), (insert, 8, 11, 123), (move, 11, 4, J)]\n";
+    assertEqual(historyOutput, expectedHistory, 31.4, "History output after first undo");
+    ropeTextBuffer.undo();
+    historyOutput = captureOutput([&ropeTextBuffer]()
+                                  { ropeTextBuffer.printHistory(); });
+    expectedHistory = "[(insert, 0, 1, A), (insert, 1, 4, CSE), (insert, 4, 9, HCMUT), (move, 9, 8, L), (insert, 8, 11, 123)]\n";
+    assertEqual(historyOutput, expectedHistory, 31.5, "History output after second undo");
+
+    ropeTextBuffer.undo();
+
+    historyOutput = captureOutput([&ropeTextBuffer]()
+                                  { ropeTextBuffer.printHistory(); });
+    expectedHistory = "[(insert, 0, 1, A), (insert, 1, 4, CSE), (insert, 4, 9, HCMUT), (move, 9, 8, L)]\n";
+    assertEqual(historyOutput, expectedHistory, 31.6, "History output after third undo");
+
+    ropeTextBuffer.redo();
+
+    historyOutput = captureOutput([&ropeTextBuffer]()
+                                  { ropeTextBuffer.printHistory(); });
+    expectedHistory = "[(insert, 0, 1, A), (insert, 1, 4, CSE), (insert, 4, 9, HCMUT), (move, 9, 8, L), (insert, 8, 11, 123)]\n";
+    assertEqual(historyOutput, expectedHistory, 31.7, "History output after first redo");
+
+    ropeTextBuffer.redo();
+    historyOutput = captureOutput([&ropeTextBuffer]()
+                                  { ropeTextBuffer.printHistory(); });
+    expectedHistory = "[(insert, 0, 1, A), (insert, 1, 4, CSE), (insert, 4, 9, HCMUT), (move, 9, 8, L), (insert, 8, 11, 123), (move, 11, 4, J)]\n";
+    assertEqual(historyOutput, expectedHistory, 31.8, "History output after second redo");
+
+    ropeTextBuffer.redo();
+
+    historyOutput = captureOutput([&ropeTextBuffer]()
+                                  { ropeTextBuffer.printHistory(); });
+    expectedHistory = "[(insert, 0, 1, A), (insert, 1, 4, CSE), (insert, 4, 9, HCMUT), (move, 9, 8, L), (insert, 8, 11, 123), (move, 11, 4, J), (delete, 4, 4, HCM)]\n";
+    assertEqual(historyOutput, expectedHistory, 31.9, "History output after third redo");
+    evaluateTests(9);
+}
+
+void sample_32()
+{
+    RopeTextBuffer buffer;
+
+    assertEqual(buffer.getContent(), "", 32.1, "Initial content should be empty");
+    assertEqual(buffer.getCursorPos(), 0, 32.2, "Initial cursor position should be 0");
+
+    buffer.insert("Hello");
+    assertEqual(buffer.getContent(), "Hello", 32.3, "Content after insert");
+    assertEqual(buffer.getCursorPos(), 5, 32.4, "Cursor position after insert");
+
+    buffer.moveCursorTo(2);
+    buffer.insert("_X_");
+    assertEqual(buffer.getContent(), "He_X_llo", 32.5, "Content after insert at cursor");
+    assertEqual(buffer.getCursorPos(), 5, 32.6, "Cursor position after insert at cursor");
+
+    buffer.moveCursorTo(0);
+    buffer.insert("START_");
+    assertEqual(buffer.getContent(), "START_He_X_llo", 32.7, "Content after insert at start");
+    assertEqual(buffer.getCursorPos(), 6, 32.8, "Cursor position after insert at start");
+
+    buffer.moveCursorTo(buffer.getContent().size());
+    buffer.insert("_END");
+    assertEqual(buffer.getContent(), "START_He_X_llo_END", 32.9, "Content after insert at end");
+    evaluateTests(9);
+}
+
+void sample_33()
+{
+    RopeTextBuffer buffer;
+    buffer.insert("Hello_my_name_is_DSA");
+    assertEqual(buffer.getContent(), "Hello_my_name_is_DSA", 33.1, "Content after insert");
+    assertEqual(buffer.getCursorPos(), 20, 33.2, "Cursor position after insert");
+    string caught;
+    try
+    {
+        buffer.moveCursorRight();
+    }
+    catch (const cursor_error &e)
+    {
+        caught = e.what();
+    }
+    assertEqual(caught, "Cursor error!", 33.3, "Moving cursor right at end throws exception");
+    buffer.moveCursorTo(0);
+    assertEqual(buffer.getCursorPos(), 0, 33.4, "Cursor position after moving to start");
+    caught.clear();
+    try
+    {
+        buffer.moveCursorLeft();
+    }
+    catch (const cursor_error &e)
+    {
+        caught = e.what();
+    }
+    assertEqual(caught, "Cursor error!", 33.5, "Moving cursor left at start throws exception");
+
+    buffer.moveCursorRight();
+    buffer.moveCursorRight();
+    buffer.moveCursorRight();
+    buffer.moveCursorRight();
+    buffer.moveCursorRight();
+    assertEqual(buffer.getCursorPos(), 5, 33.6, "Cursor position after moving right");
+    buffer.moveCursorLeft();
+    buffer.moveCursorLeft();
+    buffer.moveCursorLeft();
+    assertEqual(buffer.getCursorPos(), 2, 33.7, "Cursor position after moving left");
+    caught.clear();
+    try
+    {
+        buffer.moveCursorTo(21);
+    }
+    catch (const out_of_range &e)
+    {
+        caught = e.what();
+    }
+    assertEqual(caught, "Index is invalid!", 33.8, "Moving cursor to invalid index throws exception");
+    assertEqual(buffer.getCursorPos(), 2, 33.9, "Cursor position after moving to invalid index");
+    buffer.moveCursorTo(10);
+    assertEqual(buffer.getCursorPos(), 10, 33.10, "Cursor position after moving to valid index");
+    assertEqual(buffer.getContent(), "Hello_my_name_is_DSA", 33.11, "Content after moving to valid index");
+    buffer.clear();
+    assertEqual(buffer.getCursorPos(), 0, 33.12, "Cursor position after clear");
+    assertEqual(buffer.getContent(), "", 33.13, "Content after clear");
+
+    evaluateTests(13);
+}
+
+void sample_34()
+{
+    RopeTextBuffer buffer;
+
+    buffer.insert("Hello_my_name_is_DSA");
+    assertEqual(buffer.getContent(), "Hello_my_name_is_DSA", 34.1, "Content after insert");
+    assertEqual(buffer.getCursorPos(), 20, 34.2, "Cursor position after insert");
+
+    buffer.moveCursorTo(6);
+    buffer.deleteRange(3);
+    assertEqual(buffer.getContent(), "Hello_name_is_DSA", 34.3, "Content after delete");
+    assertEqual(buffer.getCursorPos(), 6, 34.4, "Cursor position after delete");
+
+    buffer.deleteRange(5);
+    assertEqual(buffer.getContent(), "Hello_is_DSA", 34.5, "Content after delete");
+    assertEqual(buffer.getCursorPos(), 6, 34.6, "Cursor position after delete");
+
+    int remaining = (int)buffer.getContent().size() - buffer.getCursorPos();
+    buffer.deleteRange(remaining);
+    assertEqual(buffer.getContent(), "Hello_", 34.7, "Content after delete");
+    assertEqual(buffer.getCursorPos(), 6, 34.8, "Cursor position after delete");
+    string caught;
+    try
+    {
+        buffer.deleteRange(10);
+    }
+    catch (const out_of_range &e)
+    {
+        caught = e.what();
+    }
+    assertEqual(caught, "Length is invalid!", 34.9, "Deleting range out of bounds throws exception");
+    assertEqual(buffer.getContent(), "Hello_", 34.10, "Content after exception");
+    assertEqual(buffer.getCursorPos(), 6, 34.11, "Cursor position after exception");
+
+    buffer.moveCursorTo(0);
+    buffer.deleteRange(6);
+    assertEqual(buffer.getContent(), "", 34.12, "Content after delete");
+    assertEqual(buffer.getCursorPos(), 0, 34.13, "Cursor position after delete");
+    evaluateTests(13);
+}
+
+void sample_35()
+{
+    RopeTextBuffer buffer;
+
+    buffer.insert("Hello_my_name_is_DSA");
+    assertEqual(buffer.getContent(), "Hello_my_name_is_DSA", 35.1, "Content after insert");
+    assertEqual(buffer.getCursorPos(), 20, 35.2, "Cursor position after insert");
+
+    buffer.moveCursorTo(5);
+    buffer.replace(3, "_your");
+    assertEqual(buffer.getContent(), "Hello_your_name_is_DSA", 35.3, "Content after replace");
+    assertEqual(buffer.getCursorPos(), 10, 35.4, "Cursor position after replace");
+
+    buffer.replace(5, "_friend");
+    assertEqual(buffer.getContent(), "Hello_your_friend_is_DSA", 35.5, "Content after replace");
+    assertEqual(buffer.getCursorPos(), 17, 35.6, "Cursor position after replace");
+
+    buffer.moveCursorRight();
+    buffer.replace(3, "");
+    assertEqual(buffer.getContent(), "Hello_your_friend_DSA", 35.7, "Content after replace");
+    assertEqual(buffer.getCursorPos(), 18, 35.8, "Cursor position after replace");
+
+    buffer.replace(3, "CS");
+    assertEqual(buffer.getContent(), "Hello_your_friend_CS", 35.9, "Content after replace");
+    assertEqual(buffer.getCursorPos(), 20, 35.10, "Cursor position after replace");
+    string caught;
+    try
+    {
+        buffer.replace(100, "test");
+    }
+    catch (const std::out_of_range &e)
+    {
+        caught = e.what();
+    }
+    assertEqual(caught, "Length is invalid!", 35.11, "Exception message");
+    evaluateTests(11);
+}
+
+void sample_36()
+{
+    RopeTextBuffer buffer;
+
+    buffer.insert("abracadabra");
+    assertEqual(buffer.getContent(), "abracadabra", 36.1, "Content after insert");
+
+    int pos = buffer.findFirst('a');
+    assertEqual(pos, 0, 36.2, "First occurrence of 'a'");
+
+    pos = buffer.findFirst('z');
+    assertEqual(pos, -1, 36.3, "First occurrence of 'z'");
+
+    int *positions = buffer.findAll('a');
+    int expectedA[] = {0, 3, 5, 7, 10};
+    for (int i = 0; i < 5; ++i)
+    {
+        assertEqual(positions[i], expectedA[i], 36.4, "All occurrences of 'a'");
+    }
+    delete[] positions;
+
+    positions = buffer.findAll('z');
+    int checked = 0;
+    if (positions == nullptr)
+    {
+        checked = -1;
+    }
+    assertEqual(checked, -1, 36.9, "All occurrences of 'z'");
+    evaluateTests(9);
+}
+
+void sample_37()
+{
+    RopeTextBuffer buffer;
+
+    // Ban đầu rỗng, cursor tại 0
+    assertEqual(buffer.getContent(), "", 37.1, "Initial content should be empty");
+    assertEqual(buffer.getCursorPos(), 0, 37.2, "Initial cursor position should be 0");
+
+    // Thao tác 1: insert("A")
+    buffer.insert("A");
+    assertEqual(buffer.getContent(), "A", 37.3, "Content after insert");
+    assertEqual(buffer.getCursorPos(), 1, 37.4, "Cursor position after insert");
+
+    // Thao tác 2: insert("CSE")
+    buffer.insert("CSE");
+    assertEqual(buffer.getContent(), "ACSE", 37.5, "Content after insert");
+    assertEqual(buffer.getCursorPos(), 4, 37.6, "Cursor position after insert");
+
+    // Thao tác 3: insert("HCMUT")
+    buffer.insert("HCMUT");
+    assertEqual(buffer.getContent(), "ACSEHCMUT", 37.7, "Content after insert");
+    assertEqual(buffer.getCursorPos(), 9, 37.8, "Cursor position after insert");
+
+    // Thao tác 4: moveCursorLeft()
+    buffer.moveCursorLeft();
+    assertEqual(buffer.getCursorPos(), 8, 37.9, "Cursor position after move left");
+    assertEqual(buffer.getContent(), "ACSEHCMUT", 37.10, "Content after move left");
+
+    // Thao tác 5: insert("123")
+    buffer.insert("123");
+    assertEqual(buffer.getContent(), "ACSEHCMU123T", 37.11, "Content after insert");
+    assertEqual(buffer.getCursorPos(), 11, 37.12, "Cursor position after insert");
+
+    // Thao tác 6: moveCursorTo(4)
+    buffer.moveCursorTo(4);
+    assertEqual(buffer.getCursorPos(), 4, 37.13, "Cursor position after move");
+    assertEqual(buffer.getContent(), "ACSEHCMU123T", 37.14, "Content after move");
+
+    // Thao tác 7: deleteRange(3)
+    buffer.deleteRange(3);
+    assertEqual(buffer.getContent(), "ACSEU123T", 37.15, "Content after delete");
+    assertEqual(buffer.getCursorPos(), 4, 37.16, "Cursor position after delete");
+
+    // Thao tác 8: undo() (khôi phục đoạn xóa)
+    buffer.undo();
+
+    // Thao tác 9: undo() (di chuyển cursor trở lại vị trí trước thao tác 6)
+    buffer.undo();
+
+    // Thao tác 10: undo() (xóa chuỗi "123" đã thêm)
+    buffer.undo();
+
+    // Thao tác 11: redo() (thêm lại chuỗi "123")
+    buffer.redo();
+
+    // Thao tác 12: redo() (di chuyển cursor về lại vị trí 4)
+    buffer.redo();
+
+    // Thao tác 13: redo() (xóa 3 ký tự)
+    buffer.redo();
+
+    // Kiểm tra kết quả cuối cùng
+    assertEqual(buffer.getContent(), "ACSEU123T", 37.17, "Final content after all operations");
+    assertEqual(buffer.getCursorPos(), 4, 37.18, "Final cursor position after all operations");
+
+    evaluateTests(18);
+}
+
+void sample_38()
+{
+    RopeTextBuffer buffer;
+
+    // 1. Insert "Hello"
+    buffer.insert("Hello");
+    assertEqual(buffer.getContent(), "Hello", 38.1, "Content after first insert");
+    assertEqual(buffer.getCursorPos(), 5, 38.2, "Cursor position after first insert");
+
+    // 2. Insert " World"
+    buffer.insert(" World");
+    assertEqual(buffer.getContent(), "Hello World", 38.3, "Content after second insert");
+    assertEqual(buffer.getCursorPos(), 11, 38.4, "Cursor position after second insert");
+
+    // 3. Delete " World"
+    buffer.moveCursorTo(5);
+    buffer.deleteRange(6); // xóa " World"
+
+    assertEqual(buffer.getContent(), "Hello", 38.5, "Content after delete");
+    assertEqual(buffer.getCursorPos(), 5, 38.6, "Cursor position after delete");
+
+    buffer.undo();
+    assertEqual(buffer.getContent(), "Hello World", 38.7, "Content after undo");
+    assertEqual(buffer.getCursorPos(), 5, 38.8, "Cursor position after undo");
+
+    buffer.undo();
+    assertEqual(buffer.getContent(), "Hello World", 38.9, "Content after undo");
+    assertEqual(buffer.getCursorPos(), 11, 38.10, "Cursor position after undo");
+
+    buffer.undo();
+    assertEqual(buffer.getContent(), "Hello", 38.11, "Content after undo");
+    assertEqual(buffer.getCursorPos(), 5, 38.12, "Cursor position after undo");
+
+    buffer.moveCursorTo(2);
+    buffer.moveCursorLeft();
+    buffer.moveCursorRight();
+    assertEqual(buffer.getCursorPos(), 2, 38.13, "Cursor position after move");
+
+    buffer.undo();
+    assertEqual(buffer.getCursorPos(), 1, 38.14, "Cursor position after undo");
+
+    buffer.undo();
+    assertEqual(buffer.getCursorPos(), 2, 38.15, "Cursor position after undo");
+
+    buffer.replace(3, "LLO");
+    assertEqual(buffer.getContent(), "HeLLO", 38.16, "Content after replace");
+    assertEqual(buffer.getCursorPos(), 5, 38.17, "Cursor position after replace");
+
+    buffer.undo();
+    assertEqual(buffer.getContent(), "Hello", 38.18, "Content after undo");
+    assertEqual(buffer.getCursorPos(), 2, 38.19, "Cursor position after undo");
+
+    string historyOutput = captureOutput([&buffer]()
+                                         { buffer.printHistory(); });
+    string expectedHistory = "[(insert, 0, 5, Hello), (move, 5, 2, J)]\n";
+    assertEqual(historyOutput, expectedHistory, 38.20, "History output after operations");
+
+    buffer.insert("Hello");
+    assertEqual(buffer.getContent(), "HeHellollo", 38.21, "Content after insert");
+    assertEqual(buffer.getCursorPos(), 7, 38.22, "Cursor position after insert");
+
+    historyOutput = captureOutput([&buffer]()
+                                  { buffer.printHistory(); });
+    expectedHistory = "[(insert, 0, 5, Hello), (move, 5, 2, J), (insert, 2, 7, Hello)]\n";
+    assertEqual(historyOutput, expectedHistory, 38.23, "History output after insert");
+
+    expectedHistory = "[(insert, 0, 5, Hello), (move, 5, 2, J), (insert, 2, 7, Hello)]\n";
+    assertEqual(historyOutput, expectedHistory, 38.23, "History output after final operations");
+    evaluateTests(23);
+}
+
+void sample_39()
+{
+    RopeTextBuffer buffer;
+
+    // 1. Insert "Hello"
+    buffer.insert("Hello");
+    assertEqual(buffer.getContent(), "Hello", 39.1, "Content after first insert");
+    assertEqual(buffer.getCursorPos(), 5, 39.2, "Cursor position after first insert");
+
+    // 2. Insert " World"
+    buffer.insert(" World");
+
+    assertEqual(buffer.getContent(), "Hello World", 39.3, "Content after second insert");
+    assertEqual(buffer.getCursorPos(), 11, 39.4, "Cursor position after second insert");
+
+    // 3. Delete " World"
+    buffer.moveCursorTo(5);
+    buffer.deleteRange(6);
+    assertEqual(buffer.getContent(), "Hello", 39.5, "Content after delete");
+    assertEqual(buffer.getCursorPos(), 5, 39.6, "Cursor position after delete");
+
+    // --- Undo toàn bộ ---
+    buffer.undo(); // undo delete -> quay lại "Hello World"
+    assertEqual(buffer.getContent(), "Hello World", 39.7, "Content after undo");
+    assertEqual(buffer.getCursorPos(), 5, 39.8, "Cursor position after undo");
+
+    buffer.undo(); // undo moveCursorTo
+    assertEqual(buffer.getContent(), "Hello World", 39.9, "Content after undo");
+    assertEqual(buffer.getCursorPos(), 11, 39.10, "Cursor position after undo");
+
+    buffer.undo(); // undo insert " World" -> "Hello"
+    assertEqual(buffer.getContent(), "Hello", 39.11, "Content after undo");
+    assertEqual(buffer.getCursorPos(), 5, 39.12, "Cursor position after undo");
+
+    buffer.undo(); // undo insert "Hello" -> ""
+    assertEqual(buffer.getContent(), "", 39.13, "Content after undo");
+    assertEqual(buffer.getCursorPos(), 0, 39.14, "Cursor position after undo");
+
+    // --- Redo từng bước ---
+    buffer.redo(); // redo insert "Hello"
+    assertEqual(buffer.getContent(), "Hello", 39.15, "Content after redo");
+    assertEqual(buffer.getCursorPos(), 5, 39.16, "Cursor position after redo");
+
+    buffer.redo(); // redo insert " World"
+    assertEqual(buffer.getContent(), "Hello World", 39.17, "Content after redo");
+    assertEqual(buffer.getCursorPos(), 11, 39.18, "Cursor position after redo");
+
+    buffer.redo(); // redo
+    assertEqual(buffer.getContent(), "Hello World", 39.19, "Content after redo");
+    assertEqual(buffer.getCursorPos(), 5, 39.20, "Cursor position after redo");
+
+    buffer.redo(); // redo delete " World"
+    assertEqual(buffer.getContent(), "Hello", 39.21, "Content after redo");
+    assertEqual(buffer.getCursorPos(), 5, 39.22, "Cursor position after redo");
+
+    // --- Test move cursor redo ---
+    buffer.moveCursorTo(2);
+    buffer.moveCursorLeft();  // cursor 1
+    buffer.moveCursorRight(); // cursor 2
+    assertEqual(buffer.getCursorPos(), 2, 39.23, "Cursor position after move right");
+
+    buffer.undo(); // undo move right -> cursor 1
+    assertEqual(buffer.getCursorPos(), 1, 39.24, "Cursor position after undo");
+
+    buffer.undo(); // undo move left -> cursor 2
+    assertEqual(buffer.getCursorPos(), 2, 39.25, "Cursor position after undo");
+
+    buffer.redo(); // redo move left -> cursor 1
+    assertEqual(buffer.getCursorPos(), 1, 39.26, "Cursor position after redo");
+
+    buffer.redo(); // redo move right -> cursor 2
+    assertEqual(buffer.getCursorPos(), 2, 39.27, "Cursor position after redo");
+
+    // --- Test replace redo ---
+    buffer.replace(3, "LLO1"); // HeLLO
+    assertEqual(buffer.getContent(), "HeLLO1", 39.28, "Content after replace");
+    assertEqual(buffer.getCursorPos(), 6, 39.29, "Cursor position after replace");
+
+    buffer.undo(); // quay lại Hello
+    assertEqual(buffer.getContent(), "Hello", 39.30, "Content after undo");
+    assertEqual(buffer.getCursorPos(), 2, 39.31, "Cursor position after undo");
+
+    buffer.redo(); // redo replace
+    assertEqual(buffer.getContent(), "HeLLO1", 39.32, "Content after redo");
+    assertEqual(buffer.getCursorPos(), 6, 39.33, "Cursor position after redo");
+    evaluateTests(33);
+}
+
+void sample_40()
+{
+    RopeTextBuffer buffer;
+
+    buffer.insert("A");
+    buffer.insert("CSE");
+    buffer.insert("HCMUT");
+    buffer.moveCursorLeft();
+    buffer.insert("123");
+    buffer.moveCursorTo(4);
+    buffer.deleteRange(3);
+
+    assertEqual(buffer.getContent(), "ACSEU123T", 40.1, "Content after operations");
+    assertEqual(buffer.getCursorPos(), 4, 40.2, "Cursor position after operations");
+
+    // 8: undo() -> khôi phục đoạn xóa (trở lại "ACSEHCMU123T")
+    buffer.undo();
+    assertEqual(buffer.getContent(), "ACSEHCMU123T", 40.3, "Content after undo");
+    assertEqual(buffer.getCursorPos(), 4, 40.4, "Cursor position after undo");
+
+    // 9: undo() -> quay lại vị trí con trỏ trước thao tác moveCursorTo(4)
+    buffer.undo();
+
+    assertEqual(buffer.getContent(), "ACSEHCMU123T", 40.5, "Content after undo");
+    assertEqual(buffer.getCursorPos(), 11, 40.6, "Cursor position after undo");
+
+    // 10: undo() -> xóa chuỗi "123" đã chèn ở bước 5
+    buffer.undo();
+
+    assertEqual(buffer.getContent(), "ACSEHCMUT", 40.7, "Content after undo");
+    assertEqual(buffer.getCursorPos(), 8, 40.8, "Cursor position after undo");
+
+    // 11: redo() -> thêm lại chuỗi "123" vào vị trí cursor=8
+    buffer.redo();
+    assertEqual(buffer.getContent(), "ACSEHCMU123T", 40.9, "Content after redo");
+    assertEqual(buffer.getCursorPos(), 11, 40.10, "Cursor position after redo");
+
+    // 12: redo() -> di chuyển con trỏ về vị trí 4
+    buffer.redo();
+    assertEqual(buffer.getContent(), "ACSEHCMU123T", 40.11, "Content after redo");
+    assertEqual(buffer.getCursorPos(), 4, 40.12, "Cursor position after redo");
+
+    // 13: redo() -> xóa 3 ký tự tại vị trí 4
+    buffer.redo();
+    assertEqual(buffer.getContent(), "ACSEU123T", 40.13, "Content after redo");
+    assertEqual(buffer.getCursorPos(), 4, 40.14, "Cursor position after redo");
+    evaluateTests(14);
 }
 
 void run_tests()
@@ -804,10 +1364,21 @@ void run_tests()
     sample_27();
     sample_28();
     sample_29();
+    sample_30();
+    // sample_31();
+    sample_32();
+    sample_33();
+    sample_34();
+    sample_35();
+    sample_36();
+    sample_37();
+    // sample_38();
+    sample_39();
+    sample_40();
 
     cout << "=" << string(50, '=') << endl;
     cout << COLOR_PURPLE << "All tests completed!" << COLOR_RESET << endl;
-    cout << "You have passed " << COLOR_GREEN << countOfPassedTests << COLOR_RESET << "/" << 27 << " testcases!" << endl;
+    cout << "You have passed " << COLOR_GREEN << countOfPassedTests << COLOR_RESET << "/" << 38 << " testcases!" << endl;
 }
 
 int main(int argc, char **argv)

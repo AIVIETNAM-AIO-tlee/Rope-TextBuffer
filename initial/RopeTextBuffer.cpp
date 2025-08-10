@@ -92,7 +92,7 @@ void Rope::deleteRange(int start, int length)
         throwOutOfIndex();
     }
 
-    if (length < 0 || start + length > this->length())
+    if (length < 0 || length > this->length())
     {
         throwOutOfLength();
     }
@@ -461,7 +461,7 @@ void RopeTextBuffer::deleteRange(int length)
 
     if (length > rope.length())
     {
-        throwOutOfIndex();
+        throwOutOfLength();
     }
 
     int startPos = cursorPos;
@@ -480,7 +480,7 @@ void RopeTextBuffer::deleteRange(int length)
 
 void RopeTextBuffer::replace(int length, const string &s)
 {
-    if (length < 0 || length > s.length())
+    if (length < 0 || length > rope.length())
     {
         throwOutOfLength();
     }
