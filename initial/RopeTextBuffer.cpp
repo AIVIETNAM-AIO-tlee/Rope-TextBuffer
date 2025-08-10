@@ -44,9 +44,14 @@ char Rope::charAt(int index) const
 
 string Rope::substring(int start, int length) const
 {
-    if (start < 0 || start >= this->length() || length < 0 || start + length > this->length())
+    if (start < 0 || start >= this->length())
     {
         throwOutOfIndex();
+    }
+
+    if (length < 0 || start + length > this->length())
+    {
+        throwOutOfLength();
     }
 
     string result = "";
@@ -59,14 +64,14 @@ string Rope::substring(int start, int length) const
 
 void Rope::insert(int index, const string &s)
 {
-    if (s.empty())
-    {
-        return;
-    }
-
     if (index < 0 || index > length())
     {
         throwOutOfIndex();
+    }
+
+    if (s.empty())
+    {
+        return;
     }
 
     Node *R1, *R2;
@@ -83,6 +88,11 @@ void Rope::insert(int index, const string &s)
 void Rope::deleteRange(int start, int length)
 {
     if (start < 0 || start >= this->length())
+    {
+        throwOutOfIndex();
+    }
+
+    if (length < 0 || start + length > this->length())
     {
         throwOutOfLength();
     }

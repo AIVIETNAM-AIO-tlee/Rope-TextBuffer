@@ -729,6 +729,48 @@ void sample_27()
     evaluateTests(24);
 }
 
+void sample_28()
+{
+    Rope rope;
+    rope.insert(0, "HelloWorld");
+    string caught;
+    try
+    {
+        rope.insert(99, "");
+    }
+    catch (const out_of_range &e)
+    {
+        caught = e.what();
+    }
+    assertEqual(caught, "Index is invalid!", 28.1, "Insert at invalid index throws exception");
+}
+
+void sample_29()
+{
+    Rope rope;
+    rope.insert(0, "HelloWorld");
+    string caught;
+    try
+    {
+        rope.substring(99, 5);
+    }
+    catch (const out_of_range &e)
+    {
+        caught = e.what();
+    }
+    assertEqual(caught, "Index is invalid!", 29.1, "Insert at invalid index throws exception");
+    caught.clear();
+    try
+    {
+        rope.substring(0, 11);
+    }
+    catch (const out_of_range &e)
+    {
+        caught = e.what();
+    }
+    assertEqual(caught, "Length is invalid!", 29.2, "Substring at invalid index throws exception");
+}
+
 void run_tests()
 {
     cout << "=" << string(50, '=') << endl;
@@ -760,6 +802,8 @@ void run_tests()
     sample_25();
     sample_26();
     sample_27();
+    sample_28();
+    sample_29();
 
     cout << "=" << string(50, '=') << endl;
     cout << COLOR_PURPLE << "All tests completed!" << COLOR_RESET << endl;
