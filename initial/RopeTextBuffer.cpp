@@ -355,12 +355,6 @@ Rope::Node *Rope::concatNodes(Node *left, Node *right)
         return left;
     }
 
-    Node *curr = left;
-    while (curr->right != nullptr)
-    {
-        curr = curr->right;
-    }
-
     Node *newNode = new Node("");
     newNode->left = left;
     newNode->right = right;
