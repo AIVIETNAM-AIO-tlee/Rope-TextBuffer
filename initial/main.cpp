@@ -773,6 +773,8 @@ void sample_29()
     evaluateTests(2);
 }
 
+// Test cua VO TIEN
+
 void sample_30()
 {
     RopeTextBuffer::HistoryManager hm;
@@ -1331,6 +1333,33 @@ void sample_40()
     evaluateTests(14);
 }
 
+void sample_41()
+{
+    RopeTextBuffer buffer;
+    buffer.insert("Hello");
+    buffer.insert(" World");
+    buffer.undo();
+    buffer.insert(" World2");
+    buffer.redo();
+    assertEqual(buffer.getContent(), "Hello World2", 41.1, "Content after redo");
+    assertEqual(buffer.getCursorPos(), 12, 41.2, "Cursor position after redo");
+    evaluateTests(2);
+}
+
+void sample_42()
+{
+    RopeTextBuffer buffer;
+    buffer.insert("Hello");
+    buffer.insert(" World");
+    buffer.moveCursorLeft();
+    buffer.undo();
+    buffer.insert(" World2");
+    buffer.redo();
+    assertEqual(buffer.getContent(), "Hello World World2", 42.1, "Content after redo");
+    assertEqual(buffer.getCursorPos(), 18, 42.2, "Cursor position after redo");
+    evaluateTests(2);
+}
+
 void run_tests()
 {
     cout << "=" << string(50, '=') << endl;
@@ -1375,10 +1404,12 @@ void run_tests()
     // sample_38();
     sample_39();
     sample_40();
+    sample_41();
+    sample_42();
 
     cout << "=" << string(50, '=') << endl;
     cout << COLOR_PURPLE << "All tests completed!" << COLOR_RESET << endl;
-    cout << "You have passed " << COLOR_GREEN << countOfPassedTests << COLOR_RESET << "/" << 38 << " testcases!" << endl;
+    cout << "You have passed " << COLOR_GREEN << countOfPassedTests << COLOR_RESET << "/" << 40 << " testcases!" << endl;
 }
 
 int main(int argc, char **argv)
