@@ -106,7 +106,7 @@ private:
     Rope rope;
     int cursorPos;
     HistoryManager *history;
-    string oldData;
+    string newData; // dùng cho undo/redo
 
 public:
     RopeTextBuffer();

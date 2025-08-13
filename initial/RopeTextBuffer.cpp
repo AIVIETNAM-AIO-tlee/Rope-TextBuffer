@@ -25,7 +25,7 @@ Rope::~Rope()
 
 int Rope::length() const
 {
-    return getTotalLength(root);
+    return getTotalLength(this->root);
 }
 
 bool Rope::empty() const
@@ -35,10 +35,6 @@ bool Rope::empty() const
 
 char Rope::charAt(int index) const
 {
-    if (index < 0 || index >= length())
-    {
-        throwOutOfIndex();
-    }
     return charAt(root, index);
 }
 
@@ -494,8 +490,8 @@ void RopeTextBuffer::replace(int length, const string &s)
     action.actionName = "replace";
     action.cursorBefore = startPos;
     action.cursorAfter = cursorPos;
-    action.data = s;
-    this->oldData = oldData;
+    action.data = oldData;
+    this->newData = s;
     history->addAction(action);
 }
 
@@ -632,8 +628,8 @@ void RopeTextBuffer::undo()
     }
     else if (actionToUndo.actionName == "replace")
     {
-        rope.deleteRange(actionToUndo.cursorBefore, actionToUndo.data.length());
-        rope.insert(actionToUndo.cursorBefore, this->oldData);
+        rope.deleteRange(actionToUndo.cursorBefore, this->newData.length());
+        rope.insert(actionToUndo.cursorBefore, actionToUndo.data);
         cursorPos = actionToUndo.cursorBefore;
     }
     else if (actionToUndo.actionName == "move")
@@ -674,8 +670,8 @@ void RopeTextBuffer::redo()
     }
     else if (actionToRedo.actionName == "replace")
     {
-        rope.deleteRange(actionToRedo.cursorBefore, this->oldData.length());
-        rope.insert(actionToRedo.cursorBefore, actionToRedo.data);
+        rope.deleteRange(actionToRedo.cursorBefore, actionToRedo.data.length());
+        rope.insert(actionToRedo.cursorBefore, newData);
         cursorPos = actionToRedo.cursorAfter;
     }
     else if (actionToRedo.actionName == "move")
@@ -727,7 +723,6 @@ RopeTextBuffer::HistoryManager::~HistoryManager()
 // TODO: implement other methods of HistoryManager
 void RopeTextBuffer::HistoryManager::addAction(const Action &a)
 {
-    // Don't clear redo history - keep all actions in history
     Node *newNode = new Node(a);
     if (actionHead == nullptr)
     {
