@@ -184,9 +184,9 @@ void sample_09()
     rope.deleteRange(5, 5);
     rope.insert(3, "_DataStructure");
     assertEqual(rope.toString(), "Hel_DataStructurelod", 9.1, "Content");
-    // string result = rope.traversePreOrder();
-    // assertEqual(result, "17 11 3 Hel _DataStr ucture 2 lo d", 9.2, "PreOrder traversal");
-    evaluateTests(1);
+    string result = rope.traversePreOrder();
+    assertEqual(result, "17 11 3 Hel _DataStr ucture 2 lo d", 9.2, "PreOrder traversal");
+    evaluateTests(2);
 }
 
 /*---------------------------------------- Test Rope ----------------------------------------
@@ -197,15 +197,15 @@ void sample_10()
     Rope rope;
     rope.insert(0, "Hello_World_This_is_course_DataStructure");
     assertEqual(rope.length(), 40, 10.1, "Length of Rope after insert");
-    // assertEqual(rope.traversePreOrder(), "16 8 Hello_Wo rld_This 16 8 _is_cour se_DataS tructure", 10.2, "PreOrder traversal");
+    assertEqual(rope.traversePreOrder(), "16 8 Hello_Wo rld_This 16 8 _is_cour se_DataS tructure", 10.2, "PreOrder traversal");
     rope.insert(2, "Assignment_2");
     assertEqual(rope.length(), 52, 10.3, "Length of Rope after another insert");
-    // assertEqual(rope.traversePreOrder(), "14 10 2 He Assignme nt_2 14 6 llo_Wo rld_This 16 8 _is_cour se_DataS tructure", 10.4, "PreOrder traversal");
+    assertEqual(rope.traversePreOrder(), "14 10 2 He Assignme nt_2 14 6 llo_Wo rld_This 16 8 _is_cour se_DataS tructure", 10.4, "PreOrder traversal");
     assertEqual(rope.empty(), false, 10.5, "Check empty");
     assertEqual(rope.charAt(0), 'H', 10.6, "Get Char H");
     assertEqual(rope.charAt(7), 'n', 10.7, "Get Char n");
     assertEqual(rope.toString(), "HeAssignment_2llo_World_This_is_course_DataStructure", 10.8, "ToString");
-    evaluateTests(6);
+    evaluateTests(8);
 }
 
 void sample_11()
@@ -231,13 +231,13 @@ void sample_12()
     rope.insert(0, "DSA_is_foundation_for_almost_every_software");
     assertEqual(rope.toString(), "DSA_is_foundation_for_almost_every_software", 12.1, "ToString");
     assertEqual(rope.length(), 43, 12.2, "Length");
-    // assertEqual(rope.traversePreOrder(), "32 16 8 DSA_is_f oundatio 8 n_for_al most_eve 8 ry_softw are", 12.3, "PreOrder traversal");
+    assertEqual(rope.traversePreOrder(), "32 16 8 DSA_is_f oundatio 8 n_for_al most_eve 8 ry_softw are", 12.3, "PreOrder traversal");
     rope.deleteRange(2, 5);
     assertEqual(rope.toString(), "DSfoundation_for_almost_every_software", 12.4, "ToString after delete");
     assertEqual(rope.length(), 38, 12.5, "Length after delete");
-    // assertEqual(rope.traversePreOrder(), "11 2 DS 1 f oundatio 16 8 n_for_al most_eve 8 ry_softw are", 12.6, "PreOrder traversal after delete");
+    assertEqual(rope.traversePreOrder(), "11 2 DS 1 f oundatio 16 8 n_for_al most_eve 8 ry_softw are", 12.6, "PreOrder traversal after delete");
     assertEqual(rope.substring(2, 1), "f", 12.7, "Substring");
-    evaluateTests(5);
+    evaluateTests(7);
 }
 
 /*---------------------------------------- Test RopeTextBuffer ------------------------------
@@ -629,9 +629,9 @@ void sample_27()
     assertEqual(halfChar != '\0', true, 27.7, "Half position character exists");
     assertEqual(threeQuarterChar != '\0', true, 27.8, "Three-quarter position character exists");
     assertEqual(lastChar == '.', true, 27.9, "Last character correct");
-    // string ressult = rope.traversePreOrder();
-    // string expected = "2555 2379 2211 2051 1899 1755 1100 972 852 740 636 540 452 372 300 236 176 128 88 56 32 16 8 The quic k brown  8 fox jump s over t 16 8 he lazy  dog. Thi s pangra 24 16 8 m contai ns every  letter  of the E 32 24 16 8 nglish a lphabet  at least  once, m aking it 40 32 24 16 8  a perfe ct test  string f or compr ehensive  charact 52 44 36 24 16 8 er cover age and  rope dat 8 a struct ure  Lorem ip sum dolo r sit am 56 48 40 32 24 16 8 et conse ctetur a dipiscin g elit s ed do ei usmod te mpor inc ididunt  64 56 48 40 32 24 16 8 ut labor e et dol ore magn a aliqua  enim ad  minim v eniam qu is nostr ud exerc 72 64 56 48 40 32 24 16 8 itation  ullamco  laboris  nisi ut  aliquip  ex ea co mmodo co nsequat  duis aut e irure  80 72 64 56 48 40 32 24 16 8 dolor in  reprehe nderit i n volupt ate veli t esse c illum do lore eu  fugiat n ulla par iatur ex 88 80 72 64 56 48 40 32 24 16 8 cepteur  sint occ aecat cu pidatat  non proi dent sun t in cul pa qui o fficia d eserunt  mollit a nim id e 96 88 80 72 64 56 48 40 32 24 16 8 st labor um sed u t perspi ciatis u nde omni s iste n atus err or sit v oluptate m accusa ntium do loremque  laudant 104 96 88 80 72 64 56 48 40 32 24 16 8 ium tota m rem ap eriam ea que ipsa  quae ab  illo in ventore  veritati s et qua si archi tecto be atae vit ae dicta  sunt ex 112 104 96 88 80 72 64 56 48 40 32 24 16 8 plicabo  nemo eni m ipsam  voluptat em quia  voluptas  sit asp ernatur  aut odit  aut fug it sed q uia cons equuntur  magni d olores e 120 112 104 96 88 80 72 64 56 48 40 32 24 16 8 os qui r atione v oluptate m sequi  nesciunt  neque p orro qui squam es t qui do lorem ip sum quia  dolor s it amet  consecte tur adip isci vel 647 639 423 3 it. 324 236 156 84 68 20 12 4 vali dation.  We need  40 32 24 16 8 to ensur e that o ur rope  implemen tation c an handl 8 e large  text ins 64 56 48 40 32 24 16 8 ertions,  deletio ns, and  modifica tions ef ficientl y while  maintain ing the  72 64 56 48 40 32 24 16 8 correct  tree str ucture a nd balan ce facto rs throu ghout al l operat ions per formed o 80 72 64 56 48 40 32 24 16 8 n this e xtensive  textual  content  that wi ll chall enge eve ry aspec t of our  rope im plementa 88 80 72 64 56 48 40 32 24 16 8 tion inc luding s plit ope rations,  concate nation p rocedure s, and t ree reba lancing  algorith ms that  104 96 88 80 72 64 56 48 40 32 24 16 8 must wor k correc tly unde r all ci rcumstan ces and  edge cas es that  might ar ise duri ng compl ex text  manipula 96 88 80 72 64 56 48 40 32 24 16 8 tion sce narios i n real-w orld app lication s where  performa nce and  correctn ess are  absolute ly criti 8 cal for  success. But I mu st expla 136 128 120 112 104 96 88 80 72 64 56 48 40 32 24 16 8 in to yo u how al l this m istaken  idea of  denounci ng pleas ure and  praising  pain wa s born a nd I wil l give y ou a com plete ac count of  the sys tem and  144 136 128 120 112 104 96 88 80 72 64 56 48 40 32 24 16 8 expound  the actu al teach ings of  the grea t explor er of th e truth  the mast er build er of hu man happ iness no  one rej ects dis likes or  avoids  pleasure  itself  152 144 136 128 120 112 104 96 88 80 72 64 56 48 40 32 24 16 8 because  it is pl easure b ut becau se those  who do  not know  how to  pursue p leasure  rational ly encou nter con sequence s that a re extre mely pai nful nor  again i s there  160 152 144 136 128 120 112 104 96 88 80 72 64 56 48 40 32 24 16 8 anyone w ho loves  or purs ues or d esires t o obtain  pain of  itself  because  it is pa in but b ecause o ccasiona lly circ umstance s occur  in which  toil an d pain c an procu re him s 168 160 152 144 136 128 120 112 104 96 88 80 72 64 56 48 40 32 24 16 8 ome grea t pleasu re to ta ke a tri vial exa mple whi ch of us  ever un dertakes  laborio us physi cal exer cise exc ept to o btain so me advan tage fro m it but  who has  any rig ht to fi nd fault 136 128 120 112 104 96 88 80 72 64 56 48 40 32 24 16 8  with a  man who  chooses  to enjoy  a pleas ure that  has no  annoying  consequ ences or  one who  avoids  a pain t hat prod uces no  resultan t pleasu re.";
-    // assertEqual(ressult, expected, 27.10, "Pre-order traversal result");
+    string ressult = rope.traversePreOrder();
+    string expected = "2555 2379 2211 2051 1899 1755 1100 972 852 740 636 540 452 372 300 236 176 128 88 56 32 16 8 The quic k brown  8 fox jump s over t 16 8 he lazy  dog. Thi s pangra 24 16 8 m contai ns every  letter  of the E 32 24 16 8 nglish a lphabet  at least  once, m aking it 40 32 24 16 8  a perfe ct test  string f or compr ehensive  charact 52 44 36 24 16 8 er cover age and  rope dat 8 a struct ure  Lorem ip sum dolo r sit am 56 48 40 32 24 16 8 et conse ctetur a dipiscin g elit s ed do ei usmod te mpor inc ididunt  64 56 48 40 32 24 16 8 ut labor e et dol ore magn a aliqua  enim ad  minim v eniam qu is nostr ud exerc 72 64 56 48 40 32 24 16 8 itation  ullamco  laboris  nisi ut  aliquip  ex ea co mmodo co nsequat  duis aut e irure  80 72 64 56 48 40 32 24 16 8 dolor in  reprehe nderit i n volupt ate veli t esse c illum do lore eu  fugiat n ulla par iatur ex 88 80 72 64 56 48 40 32 24 16 8 cepteur  sint occ aecat cu pidatat  non proi dent sun t in cul pa qui o fficia d eserunt  mollit a nim id e 96 88 80 72 64 56 48 40 32 24 16 8 st labor um sed u t perspi ciatis u nde omni s iste n atus err or sit v oluptate m accusa ntium do loremque  laudant 104 96 88 80 72 64 56 48 40 32 24 16 8 ium tota m rem ap eriam ea que ipsa  quae ab  illo in ventore  veritati s et qua si archi tecto be atae vit ae dicta  sunt ex 112 104 96 88 80 72 64 56 48 40 32 24 16 8 plicabo  nemo eni m ipsam  voluptat em quia  voluptas  sit asp ernatur  aut odit  aut fug it sed q uia cons equuntur  magni d olores e 120 112 104 96 88 80 72 64 56 48 40 32 24 16 8 os qui r atione v oluptate m sequi  nesciunt  neque p orro qui squam es t qui do lorem ip sum quia  dolor s it amet  consecte tur adip isci vel 647 639 423 3 it. 324 236 156 84 68 20 12 4 vali dation.  We need  40 32 24 16 8 to ensur e that o ur rope  implemen tation c an handl 8 e large  text ins 64 56 48 40 32 24 16 8 ertions,  deletio ns, and  modifica tions ef ficientl y while  maintain ing the  72 64 56 48 40 32 24 16 8 correct  tree str ucture a nd balan ce facto rs throu ghout al l operat ions per formed o 80 72 64 56 48 40 32 24 16 8 n this e xtensive  textual  content  that wi ll chall enge eve ry aspec t of our  rope im plementa 88 80 72 64 56 48 40 32 24 16 8 tion inc luding s plit ope rations,  concate nation p rocedure s, and t ree reba lancing  algorith ms that  104 96 88 80 72 64 56 48 40 32 24 16 8 must wor k correc tly unde r all ci rcumstan ces and  edge cas es that  might ar ise duri ng compl ex text  manipula 96 88 80 72 64 56 48 40 32 24 16 8 tion sce narios i n real-w orld app lication s where  performa nce and  correctn ess are  absolute ly criti 8 cal for  success. But I mu st expla 136 128 120 112 104 96 88 80 72 64 56 48 40 32 24 16 8 in to yo u how al l this m istaken  idea of  denounci ng pleas ure and  praising  pain wa s born a nd I wil l give y ou a com plete ac count of  the sys tem and  144 136 128 120 112 104 96 88 80 72 64 56 48 40 32 24 16 8 expound  the actu al teach ings of  the grea t explor er of th e truth  the mast er build er of hu man happ iness no  one rej ects dis likes or  avoids  pleasure  itself  152 144 136 128 120 112 104 96 88 80 72 64 56 48 40 32 24 16 8 because  it is pl easure b ut becau se those  who do  not know  how to  pursue p leasure  rational ly encou nter con sequence s that a re extre mely pai nful nor  again i s there  160 152 144 136 128 120 112 104 96 88 80 72 64 56 48 40 32 24 16 8 anyone w ho loves  or purs ues or d esires t o obtain  pain of  itself  because  it is pa in but b ecause o ccasiona lly circ umstance s occur  in which  toil an d pain c an procu re him s 168 160 152 144 136 128 120 112 104 96 88 80 72 64 56 48 40 32 24 16 8 ome grea t pleasu re to ta ke a tri vial exa mple whi ch of us  ever un dertakes  laborio us physi cal exer cise exc ept to o btain so me advan tage fro m it but  who has  any rig ht to fi nd fault 136 128 120 112 104 96 88 80 72 64 56 48 40 32 24 16 8  with a  man who  chooses  to enjoy  a pleas ure that  has no  annoying  consequ ences or  one who  avoids  a pain t hat prod uces no  resultan t pleasu re.";
+    assertEqual(ressult, expected, 27.10, "Pre-order traversal result");
     int deleteStart1 = totalAfterThird / 6;
     int deleteLen1 = 200;
     rope.deleteRange(deleteStart1, deleteLen1);
@@ -681,9 +681,9 @@ void sample_27()
     afterMiddleInsert -= largeDel;
     assertEqual(rope.length(), afterMiddleInsert, 27.21, "Length after large delete from beginning");
 
-    // string traversal = rope.traversePreOrder();
-    // assertEqual(traversal.length() > 0, true, 27.22, "Traversal produces output");
-    // assertEqual(traversal.find(" ") != string::npos, true, 27.23, "Traversal contains spaces (proper format)");
+    string traversal = rope.traversePreOrder();
+    assertEqual(traversal.length() > 0, true, 27.22, "Traversal produces output");
+    assertEqual(traversal.find(" ") != string::npos, true, 27.23, "Traversal contains spaces (proper format)");
 
     if (afterMiddleInsert > 0)
     {
@@ -702,7 +702,7 @@ void sample_27()
     assertEqual((int)finalContent.length(), afterMiddleInsert, 27.28, "Final toString length matches");
     assertEqual(finalContent.find("***") != string::npos, true, 27.29, "Marker still present in final content");
 
-    evaluateTests(21);
+    evaluateTests(24);
 }
 
 void sample_28()
