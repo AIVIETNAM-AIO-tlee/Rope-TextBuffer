@@ -1431,6 +1431,78 @@ void sample_48()
     evaluateTests(4);
 }
 
+void sample_49()
+{
+    RopeTextBuffer buffer;
+
+    // Test Node structure and Rope operations
+    buffer.insert("ABCDEFGH"); // Tests 8-char leaf node limit
+    assertEqual(buffer.getContent(), "ABCDEFGH", 49.1, "Basic 8-char node test");
+
+    buffer.insert("IJKLMNOP"); // Should create new nodes
+    assertEqual(buffer.getContent(), "ABCDEFGHIJKLMNOP", 49.2, "Multiple node test");
+
+    // Test navigation principle
+    buffer.moveCursorTo(4);
+    assertEqual(buffer.getCursorPos(), 4, 49.3, "Navigation test");
+
+    // Test balancing
+    string longText = "ThisIsAVeryLongStringToTestBalancing";
+    buffer.insert(longText);
+    assertEqual(buffer.getContent(), "ABCDThisIsAVeryLongStringToTestBalancingEFGHIJKLMNOP", 49.4, "Balance test after long insert");
+
+    // Test complex operations
+    buffer.moveCursorTo(8);
+    buffer.deleteRange(8); // Delete "IJKLMNOP"
+    assertEqual(buffer.getContent(), "ABCDThisongStringToTestBalancingEFGHIJKLMNOP", 49.5, "Delete operation test");
+
+    buffer.moveCursorTo(8);
+    buffer.insert("_DataStructure_"); // Insert in middle
+    assertEqual(buffer.getContent(), "ABCDThis_DataStructure_ongStringToTestBalancingEFGHIJKLMNOP", 49.6, "Middle insertion test");
+
+    // Test undo/redo with complex operations
+    buffer.undo(); // Undo insert
+    assertEqual(buffer.getContent(), "ABCDThisongStringToTestBalancingEFGHIJKLMNOP", 49.7, "Undo insert test");
+
+    buffer.redo(); // Redo insert
+    assertEqual(buffer.getContent(), "ABCDThis_DataStructure_ongStringToTestBalancingEFGHIJKLMNOP", 49.8, "Redo insert test");
+
+    // Test cursor movement and history
+    buffer.moveCursorTo(0);
+    buffer.moveCursorRight();
+    buffer.moveCursorRight();
+    buffer.insert("XXX");
+    assertEqual(buffer.getContent(), "ABXXXCDThis_DataStructure_ongStringToTestBalancingEFGHIJKLMNOP", 49.9, "Insert after cursor movement");
+
+    // Test find operations
+    int firstD = buffer.findFirst('D');
+    assertEqual(firstD >= 0, true, 49.10, "Find first character");
+
+    int *allTs = buffer.findAll('T');
+    assertEqual(allTs != nullptr, true, 49.11, "Find all characters");
+    if (allTs != nullptr)
+        delete[] allTs;
+
+    // Test replace operation
+    buffer.moveCursorTo(5);
+    buffer.replace(3, "YYY");
+    assertEqual(buffer.getContent().find("YYY") != string::npos, true, 49.12, "Replace operation test");
+
+    // Test history tracking
+    string historyOutput = captureOutput([&buffer]()
+                                         { buffer.printHistory(); });
+    assertEqual(historyOutput.find("insert") != string::npos, true, 49.13, "History contains insert operations");
+    assertEqual(historyOutput.find("move") != string::npos, true, 49.14, "History contains move operations");
+    assertEqual(historyOutput.find("replace") != string::npos, true, 49.15, "History contains replace operations");
+
+    // Clean up
+    buffer.clear();
+    assertEqual(buffer.getContent(), "", 49.16, "Clear operation test");
+    assertEqual(buffer.getCursorPos(), 0, 49.17, "Cursor position after clear");
+
+    evaluateTests(17);
+}
+
 void run_tests()
 {
     cout << "=" << string(50, '=') << endl;
@@ -1483,10 +1555,11 @@ void run_tests()
     sample_46();
     sample_47();
     sample_48();
+    sample_49();
 
     cout << "=" << string(50, '=') << endl;
     cout << COLOR_PURPLE << "All tests completed!" << COLOR_RESET << endl;
-    cout << "You have passed " << COLOR_GREEN << countOfPassedTests << COLOR_RESET << "/" << 47 << " testcases!" << endl;
+    cout << "You have passed " << COLOR_GREEN << countOfPassedTests << COLOR_RESET << "/" << 48 << " testcases!" << endl;
 }
 
 int main(int argc, char **argv)
