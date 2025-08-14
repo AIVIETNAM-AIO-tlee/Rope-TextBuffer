@@ -1,5 +1,87 @@
 #include "RopeTextBuffer.h"
 
+// ------------------ Implement stack for action list ------------------
+
+template <typename T>
+Stack<T>::Stack()
+{
+    head = nullptr;
+    tail = nullptr;
+    count = 0;
+}
+template <typename T>
+Stack<T>::~Stack()
+{
+    while (!isEmpty())
+    {
+        pop();
+    }
+}
+template <typename T>
+void Stack<T>::push(T data)
+{
+    Node *newNode = new Node(data);
+    if (isEmpty())
+    {
+        head = newNode;
+        tail = newNode;
+    }
+    else
+    {
+        tail->setNext(newNode);
+        newNode->setPrev(tail);
+        tail = newNode;
+    }
+    count++;
+}
+
+template <typename T>
+void Stack<T>::pop()
+{
+    if (isEmpty())
+    {
+        return;
+    }
+    Node *temp = tail;
+    tail = tail->getPrev();
+    if (tail)
+    {
+        tail->setNext(nullptr);
+    }
+    else
+    {
+        head = nullptr;
+    }
+    delete temp;
+    count--;
+}
+
+template <typename T>
+T Stack<T>::top() const
+{
+    if (isEmpty())
+    {
+        return T();
+    }
+    return tail->getData();
+}
+
+template <typename T>
+bool Stack<T>::isEmpty() const
+{
+    return count == 0 || head == nullptr;
+}
+
+template <typename T>
+void Stack<T>::clear()
+{
+    while (!isEmpty())
+    {
+        pop();
+    }
+}
+
+// ---------------------------------------------------------------------
 void throwOutOfIndex()
 {
     throw out_of_range("Index is invalid!");
@@ -491,7 +573,7 @@ void RopeTextBuffer::replace(int length, const string &s)
     action.cursorBefore = startPos;
     action.cursorAfter = cursorPos;
     action.data = oldData;
-    this->newData = s;
+    action.newData = s;
     history->addAction(action);
 }
 
@@ -628,7 +710,7 @@ void RopeTextBuffer::undo()
     }
     else if (actionToUndo.actionName == "replace")
     {
-        rope.deleteRange(actionToUndo.cursorBefore, this->newData.length());
+        rope.deleteRange(actionToUndo.cursorBefore, actionToUndo.newData.length());
         rope.insert(actionToUndo.cursorBefore, actionToUndo.data);
         cursorPos = actionToUndo.cursorBefore;
     }
@@ -636,7 +718,8 @@ void RopeTextBuffer::undo()
     {
         cursorPos = actionToUndo.cursorBefore;
     }
-    // Move current pointer back
+    // đưa về action trước
+    history->actionStackUndo.push(actionToUndo);
     history->current = history->current->prev;
 }
 
@@ -647,6 +730,9 @@ void RopeTextBuffer::redo()
         return;
     }
 
+    HistoryManager::Action actionToRedo = history->actionStackUndo.top();
+    history->actionStackUndo.pop();
+
     if (history->current == nullptr)
     {
         history->current = history->actionHead;
@@ -655,8 +741,6 @@ void RopeTextBuffer::redo()
     {
         history->current = history->current->next;
     }
-
-    HistoryManager::Action actionToRedo = history->current->action;
 
     if (actionToRedo.actionName == "insert")
     {
@@ -671,7 +755,7 @@ void RopeTextBuffer::redo()
     else if (actionToRedo.actionName == "replace")
     {
         rope.deleteRange(actionToRedo.cursorBefore, actionToRedo.data.length());
-        rope.insert(actionToRedo.cursorBefore, newData);
+        rope.insert(actionToRedo.cursorBefore, actionToRedo.newData);
         cursorPos = actionToRedo.cursorAfter;
     }
     else if (actionToRedo.actionName == "move")
@@ -735,7 +819,12 @@ void RopeTextBuffer::HistoryManager::addAction(const Action &a)
         actionTail = newNode;
     }
 
-    current = newNode;
+    current = actionTail;
+    if (a.actionName == "insert" || a.actionName == "replace")
+    {
+        actionStackUndo.clear();
+    }
+
     actionCount++;
 }
 
@@ -746,11 +835,22 @@ bool RopeTextBuffer::HistoryManager::canUndo() const
         return false;
     }
     return true;
+
+    // if (actionStackUndo.isEmpty())
+    // {
+    //     return false;
+    // }
+    // return true;
 }
 
 bool RopeTextBuffer::HistoryManager::canRedo() const
 {
-    return (current && current->next) || (current == nullptr && actionHead != nullptr);
+    // return (current && current->next) || (current == nullptr && actionHead != nullptr);
+    if (actionStackUndo.isEmpty())
+    {
+        return false;
+    }
+    return true;
 }
 
 void RopeTextBuffer::HistoryManager::printHistory() const
@@ -769,3 +869,5 @@ void RopeTextBuffer::HistoryManager::printHistory() const
     historyStr += "]";
     cout << historyStr << endl;
 }
+
+template class Stack<RopeTextBuffer::HistoryManager::Action>;

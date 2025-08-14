@@ -1,4 +1,3 @@
-
 #ifndef ROPE_TEXTBUFFER_H
 #define ROPE_TEXTBUFFER_H
 
@@ -7,6 +6,82 @@
 /*
     Student can define other list data structures here
 */
+
+template <typename T>
+class Stack
+{
+public:
+    class Node;
+
+protected:
+    Node *head;
+    Node *tail;
+    int count;
+
+public:
+    Stack();
+    ~Stack();
+
+    void push(T data);
+    void pop();
+    T top() const;
+    bool isEmpty() const;
+    void clear();
+
+    Node *getHead() const { return head; }
+    void setHead(Node *newHead) { head = newHead; }
+    Node *getTail() const { return tail; }
+    void setTail(Node *newTail) { tail = newTail; }
+    void setCount(int newCount) { count = newCount; }
+
+public:
+    class Node
+    {
+    public:
+        T data;
+        Node *next;
+        Node *prev;
+        friend class Stack<T>;
+
+    public:
+        Node()
+        {
+            this->next = nullptr;
+            this->prev = nullptr;
+        }
+
+        Node(const T &data)
+        {
+            this->data = data;
+            this->next = nullptr;
+            this->prev = nullptr;
+        }
+
+        Node *getNext() const
+        {
+            return next;
+        }
+
+        void setNext(Node *next)
+        {
+            this->next = next;
+        }
+
+        void setPrev(Node *prev)
+        {
+            this->prev = prev;
+        }
+
+        Node *getPrev() const
+        {
+            return prev;
+        }
+        T getData() const
+        {
+            return data;
+        }
+    };
+};
 
 /**
  * Rope (AVL-based, fixed leaf chunk size = 8)
@@ -106,7 +181,6 @@ private:
     Rope rope;
     int cursorPos;
     HistoryManager *history;
-    string newData; // dùng cho undo/redo
 
 public:
     RopeTextBuffer();
@@ -140,6 +214,7 @@ public:
         int cursorBefore;
         int cursorAfter;
         string data;
+        string newData; // dùng cho undo/redo
     };
 
     class Node
@@ -159,6 +234,8 @@ private:
     Node *actionHead;
     Node *actionTail;
     Node *current;
+    Stack<Action> actionStackUndo;
+    // Stack<Action> ActionStack;
     int actionCount;
 
 public:

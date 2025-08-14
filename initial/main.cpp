@@ -1305,6 +1305,130 @@ void sample_43()
     string historyOutput = captureOutput([&buffer]()
                                          { buffer.printHistory(); });
     assertEqual(historyOutput, "[(insert, 0, 5, Hello), (insert, 5, 11,  World), (move, 11, 0, J), (replace, 0, 7, Hello)]\n", 43.1, "History output after operations");
+    evaluateTests(1);
+}
+
+void sample_44()
+{
+    RopeTextBuffer buffer;
+    buffer.insert("Hello");
+    buffer.insert("_World");
+    buffer.undo();
+    buffer.moveCursorLeft();
+    buffer.redo();
+    assertEqual(buffer.getContent(), "Hello_World", 44.1, "Content after undo and redo");
+    assertEqual(buffer.getCursorPos(), 11, 44.2, "Cursor position after undo and redo");
+    string historyOutput = captureOutput([&buffer]()
+                                         { buffer.printHistory(); });
+    assertEqual(historyOutput, "[(insert, 0, 5, Hello), (insert, 5, 11, _World), (move, 5, 4, L)]\n", 44.3, "History output after operations");
+    evaluateTests(3);
+}
+
+void sample_45()
+{
+    RopeTextBuffer buffer;
+
+    // Test 1: Basic redo after undo
+    buffer.insert("Hello");  // Content: "Hello", cursor: 5
+    buffer.insert("_World"); // Content: "Hello_World", cursor: 11
+    buffer.undo();           // Content: "Hello", cursor: 5
+    buffer.redo();           // Content: "Hello_World", cursor: 11
+    assertEqual(buffer.getContent(), "Hello_World", 45.1, "Content after basic undo/redo");
+    assertEqual(buffer.getCursorPos(), 11, 45.2, "Cursor position after basic undo/redo");
+
+    // Test 2: Cannot redo after new insert
+    buffer.undo();      // Undo insert "_World" -> Content: "Hello", cursor: 5
+    buffer.insert("!"); // New insert - should prevent redo of "_World"
+    buffer.redo();      // Should not work - previous redo of "_World" should be blocked
+    assertEqual(buffer.getContent(), "Hello!", 45.3, "Content after insert blocks redo");
+    assertEqual(buffer.getCursorPos(), 6, 45.4, "Cursor position after blocked redo");
+
+    // Test 3: Can redo only after undo
+    buffer.undo(); // Undo insert "!" -> Content: "Hello", cursor: 5
+    buffer.redo(); // Should work - can redo "!" because we just undid it
+    assertEqual(buffer.getContent(), "Hello!", 45.5, "Content after new undo/redo sequence");
+    assertEqual(buffer.getCursorPos(), 6, 45.6, "Cursor position after new undo/redo sequence");
+
+    string historyOutput = captureOutput([&buffer]()
+                                         { buffer.printHistory(); });
+    assertEqual(historyOutput, "[(insert, 0, 5, Hello), (insert, 5, 11, _World), (insert, 5, 6, !)]\n", 45.7,
+                "History should show only valid actions after blocked redo");
+
+    evaluateTests(7);
+}
+
+void sample_46()
+{
+    RopeTextBuffer buffer;
+
+    buffer.insert("Hello");
+    buffer.insert("_World");
+    buffer.undo();
+
+    buffer.moveCursorTo(2);
+    buffer.moveCursorLeft();
+    buffer.moveCursorRight();
+    buffer.redo();
+
+    assertEqual(buffer.getContent(), "Hello_World", 46.1, "Content after moves and redo");
+    assertEqual(buffer.getCursorPos(), 11, 46.2, "Cursor position after moves and redo");
+
+    string historyOutput = captureOutput([&buffer]()
+                                         { buffer.printHistory(); });
+    assertEqual(historyOutput, "[(insert, 0, 5, Hello), (insert, 5, 11, _World), "
+                               "(move, 5, 2, J), (move, 2, 1, L), (move, 1, 2, R)]\n",
+                46.3,
+                "History should show all operations including moves");
+
+    buffer.undo();
+    buffer.undo();
+    buffer.insert("!"); // because this is action insert, so no redo works after all
+    buffer.redo();
+
+    assertEqual(buffer.getContent(), "Hello_World!", 46.4,
+                "Content should not include _World after blocked redo");
+    assertEqual(buffer.getCursorPos(), 12, 46.5,
+                "Cursor position after blocked redo");
+
+    evaluateTests(5);
+}
+
+void sample_47()
+{
+    RopeTextBuffer buffer;
+    buffer.insert("Hello");
+    buffer.insert("_World");
+    buffer.undo();
+    buffer.undo();
+    assertEqual(buffer.getContent(), "", 47.1, "Content after multiple undos");
+    assertEqual(buffer.getCursorPos(), 0, 47.2, "Cursor position after multiple undos");
+    buffer.redo();
+    buffer.redo();
+    assertEqual(buffer.getContent(), "Hello_World", 47.3, "Content after redos");
+    assertEqual(buffer.getCursorPos(), 11, 47.4, "Cursor position after redos");
+    evaluateTests(4);
+}
+
+void sample_48()
+{
+    RopeTextBuffer buffer;
+    buffer.insert("Hello");
+    buffer.insert("_World");
+    buffer.undo();
+    buffer.undo();
+    assertEqual(buffer.getContent(), "", 47.1, "Content after multiple undos");
+    assertEqual(buffer.getCursorPos(), 0, 47.2, "Cursor position after multiple undos");
+    buffer.redo();                               // string: "Hello", cursor: 5
+    buffer.moveCursorTo(2);                      // update cursor: 2
+    buffer.replace(3, "This_is_the_end_of_DSA"); // string: HeThis_is_the_end_of_DSA, cursor: 24
+    buffer.redo();
+    assertEqual(buffer.getContent(), "HeThis_is_the_end_of_DSA", 47.3, "Content after redos");
+    assertEqual(buffer.getCursorPos(), 24, 47.4, "Cursor position after redos");
+    string historyOutput = captureOutput([&buffer]()
+                                         { buffer.printHistory(); });
+    string expectedHistory = "[(insert, 0, 5, Hello), (insert, 5, 11, _World), (move, 5, 2, J), (replace, 2, 24, llo)]\n";
+    assertEqual(historyOutput, expectedHistory, 47.5, "History should show all operations");
+    evaluateTests(4);
 }
 
 void run_tests()
@@ -1354,10 +1478,15 @@ void run_tests()
     sample_41();
     sample_42();
     sample_43();
+    sample_44();
+    sample_45();
+    sample_46();
+    sample_47();
+    sample_48();
 
     cout << "=" << string(50, '=') << endl;
     cout << COLOR_PURPLE << "All tests completed!" << COLOR_RESET << endl;
-    cout << "You have passed " << COLOR_GREEN << countOfPassedTests << COLOR_RESET << "/" << 42 << " testcases!" << endl;
+    cout << "You have passed " << COLOR_GREEN << countOfPassedTests << COLOR_RESET << "/" << 47 << " testcases!" << endl;
 }
 
 int main(int argc, char **argv)

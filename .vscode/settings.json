@@ -11,6 +11,7 @@
         "variant": "cpp",
         "exception": "cpp",
         "iomanip": "cpp",
-        "iosfwd": "cpp"
+        "iosfwd": "cpp",
+        "text_encoding": "cpp"
     }
 }
