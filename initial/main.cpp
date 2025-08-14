@@ -98,7 +98,18 @@ void sample_03()
     rope.insert(0, "ABC");
     assertEqual(rope.charAt(1), 'B', 3.1, "charAt(1) should return 'B'");
     assertEqual(rope.charAt(0), 'A', 3.2, "charAt(0) should return 'A'");
-    evaluateTests(2);
+    assertEqual(rope.charAt(2), 'C', 3.3, "charAt(2) should return 'C'");
+    string caught;
+    try
+    {
+        rope.charAt(3);
+    }
+    catch (const out_of_range &e)
+    {
+        caught = e.what();
+    }
+    assertEqual(caught, "Index is invalid!", 3.4, "Out of range exception");
+    evaluateTests(4);
 }
 
 void sample_04()
@@ -979,7 +990,7 @@ void sample_35()
     {
         caught = e.what();
     }
-    assertEqual(caught, "Index is invalid!", 35.7, "Exception message");
+    assertEqual(caught, "Length is invalid!", 35.7, "Exception message");
     assertEqual(buffer.getContent(), "Assignment_2_is_very_very_difficultyy", 35.8, "Content after replace");
     assertEqual(buffer.getCursorPos(), 37, 35.9, "Cursor position after replace");
 
@@ -1382,7 +1393,7 @@ void sample_46()
 
     buffer.undo();
     buffer.undo();
-    buffer.insert("!"); // because this is action insert, so no redo works after all
+    buffer.insert("!");
     buffer.redo();
 
     assertEqual(buffer.getContent(), "Hello_World!", 46.4,
@@ -1428,79 +1439,150 @@ void sample_48()
                                          { buffer.printHistory(); });
     string expectedHistory = "[(insert, 0, 5, Hello), (insert, 5, 11, _World), (move, 5, 2, J), (replace, 2, 24, llo)]\n";
     assertEqual(historyOutput, expectedHistory, 47.5, "History should show all operations");
-    evaluateTests(4);
+    evaluateTests(5);
 }
 
 void sample_49()
 {
     RopeTextBuffer buffer;
 
-    // Test Node structure and Rope operations
-    buffer.insert("ABCDEFGH"); // Tests 8-char leaf node limit
-    assertEqual(buffer.getContent(), "ABCDEFGH", 49.1, "Basic 8-char node test");
+    // test exception handling first init
+    string caught;
+    try
+    {
+        buffer.deleteRange(8);
+    }
+    catch (const std::out_of_range &e)
+    {
+        caught = e.what();
+    }
 
-    buffer.insert("IJKLMNOP"); // Should create new nodes
-    assertEqual(buffer.getContent(), "ABCDEFGHIJKLMNOP", 49.2, "Multiple node test");
+    assertEqual(caught, "Length is invalid!", 49.1, "Caught expected exception");
+    caught.clear();
+    buffer.insert("Hello_DSA");
 
-    // Test navigation principle
-    buffer.moveCursorTo(4);
-    assertEqual(buffer.getCursorPos(), 4, 49.3, "Navigation test");
+    try
+    {
+        buffer.deleteRange(10);
+    }
+    catch (const std::out_of_range &e)
+    {
+        caught = e.what();
+    }
 
-    // Test balancing
-    string longText = "ThisIsAVeryLongStringToTestBalancing";
-    buffer.insert(longText);
-    assertEqual(buffer.getContent(), "ABCDThisIsAVeryLongStringToTestBalancingEFGHIJKLMNOP", 49.4, "Balance test after long insert");
+    assertEqual(caught, "Length is invalid!", 49.2, "Caught expected exception");
 
-    // Test complex operations
-    buffer.moveCursorTo(8);
-    buffer.deleteRange(8); // Delete "IJKLMNOP"
-    assertEqual(buffer.getContent(), "ABCDThisongStringToTestBalancingEFGHIJKLMNOP", 49.5, "Delete operation test");
+    assertEqual(buffer.findFirst('D'), 6, 49.3, "Find first occurrence");
+    assertEqual(buffer.findFirst('X'), -1, 49.4, "Find first non-existent character");
+    int *positions = buffer.findAll('l');
+    int expectedA[] = {2, 3};
+    for (int i = 0; i < 2; ++i)
+    {
+        assertEqual(positions[i], expectedA[i], 49.5, "All occurrences of 'a'");
+    }
+    delete[] positions;
 
-    buffer.moveCursorTo(8);
-    buffer.insert("_DataStructure_"); // Insert in middle
-    assertEqual(buffer.getContent(), "ABCDThis_DataStructure_ongStringToTestBalancingEFGHIJKLMNOP", 49.6, "Middle insertion test");
+    positions = buffer.findAll('X');
+    assertEqual(positions == nullptr, true, 49.6, "All occurrences of 'X'");
+    delete[] positions;
+    buffer.moveCursorTo(9);
+    caught.clear();
+    try
+    {
+        buffer.replace(10, "This_Should_raise_exception");
+    }
+    catch (const std::out_of_range &e)
+    {
+        caught = e.what();
+    }
 
-    // Test undo/redo with complex operations
-    buffer.undo(); // Undo insert
-    assertEqual(buffer.getContent(), "ABCDThisongStringToTestBalancingEFGHIJKLMNOP", 49.7, "Undo insert test");
+    assertEqual(caught, "Length is invalid!", 49.7, "Caught expected exception");
 
-    buffer.redo(); // Redo insert
-    assertEqual(buffer.getContent(), "ABCDThis_DataStructure_ongStringToTestBalancingEFGHIJKLMNOP", 49.8, "Redo insert test");
+    assertEqual(buffer.getContent(), "Hello_DSA", 49.8, "Content after exception");
+    assertEqual(buffer.getCursorPos(), 9, 49.9, "Cursor position after exception");
+    caught.clear();
+    try
+    {
+        buffer.moveCursorTo(100);
+    }
+    catch (const std::out_of_range &e)
+    {
+        caught = e.what();
+    }
 
-    // Test cursor movement and history
-    buffer.moveCursorTo(0);
-    buffer.moveCursorRight();
-    buffer.moveCursorRight();
-    buffer.insert("XXX");
-    assertEqual(buffer.getContent(), "ABXXXCDThis_DataStructure_ongStringToTestBalancingEFGHIJKLMNOP", 49.9, "Insert after cursor movement");
+    assertEqual(caught, "Index is invalid!", 49.10, "Caught expected exception");
 
-    // Test find operations
-    int firstD = buffer.findFirst('D');
-    assertEqual(firstD >= 0, true, 49.10, "Find first character");
+    caught.clear();
+    try
+    {
+        buffer.moveCursorRight();
+    }
+    catch (const cursor_error &e)
+    {
+        caught = e.what();
+    }
 
-    int *allTs = buffer.findAll('T');
-    assertEqual(allTs != nullptr, true, 49.11, "Find all characters");
-    if (allTs != nullptr)
-        delete[] allTs;
+    assertEqual(caught, "Cursor error!", 49.11, "Caught expected exception");
+    caught.clear();
+    try
+    {
+        buffer.moveCursorTo(0);
+        buffer.moveCursorLeft();
+    }
+    catch (const cursor_error &e)
+    {
+        caught = e.what();
+    }
 
-    // Test replace operation
-    buffer.moveCursorTo(5);
-    buffer.replace(3, "YYY");
-    assertEqual(buffer.getContent().find("YYY") != string::npos, true, 49.12, "Replace operation test");
+    assertEqual(caught, "Cursor error!", 49.12, "Caught expected exception");
+    buffer.undo();
+    assertEqual(buffer.getContent(), "Hello_DSA", 49.13, "Content after undo");
+    assertEqual(buffer.getCursorPos(), 9, 49.14, "Cursor position after undo");
 
-    // Test history tracking
+    buffer.undo();
+
+    assertEqual(buffer.getContent(), "", 49.15, "Content after undo");
+    assertEqual(buffer.getCursorPos(), 0, 49.16, "Cursor position after undo");
+    buffer.insert("Hello_Assignment_2");
+    buffer.redo(); // theo yc cua thay thi cho nay se xoa het stack undo
+    assertEqual(buffer.getContent(), "Hello_Assignment_2", 49.17, "Content after insert");
+    assertEqual(buffer.getCursorPos(), 18, 49.18, "Cursor position after insert");
+
+    buffer.insert("DSA_is_here!");
+    buffer.undo();
+    buffer.moveCursorLeft();
+    assertEqual(buffer.getCursorPos(), 17, 49.19, "Cursor position after move left");
+    buffer.redo();
+    assertEqual(buffer.getCursorPos(), 30, 49.20, "Cursor position after redo");
+    assertEqual(buffer.getContent(), "Hello_Assignment_2DSA_is_here!", 49.21, "Content after redo");
     string historyOutput = captureOutput([&buffer]()
                                          { buffer.printHistory(); });
-    assertEqual(historyOutput.find("insert") != string::npos, true, 49.13, "History contains insert operations");
-    assertEqual(historyOutput.find("move") != string::npos, true, 49.14, "History contains move operations");
-    assertEqual(historyOutput.find("replace") != string::npos, true, 49.15, "History contains replace operations");
+    string expectedHistory = "[(insert, 0, 9, Hello_DSA), (move, 9, 0, J), (insert, 0, 18, Hello_Assignment_2), (insert, 18, 30, DSA_is_here!), (move, 18, 17, L)]\n";
+    assertEqual(historyOutput, expectedHistory, 49.22, "History output");
 
-    // Clean up
+    buffer.undo();
+    buffer.moveCursorTo(4);
+    buffer.replace(4, "Hello_This_Is_test4replace");
+    buffer.redo();
+    assertEqual(buffer.getContent(), "HellHello_This_Is_test4replacesignment_2DSA_is_here!", 49.23, "Content after redo");
+    assertEqual(buffer.getCursorPos(), 30, 49.24, "Cursor position after redo");
+    buffer.moveCursorTo(4);
+    buffer.deleteRange(10);
+    assertEqual(buffer.getContent(), "Hell_Is_test4replacesignment_2DSA_is_here!", 49.25, "Content after delete");
+    assertEqual(buffer.getCursorPos(), 4, 49.26, "Cursor position after delete");
+    buffer.redo();
+    assertEqual(buffer.getContent(), "Hell_Is_test4replacesignment_2DSA_is_here!", 49.27, "Content after redo");
+    assertEqual(buffer.getCursorPos(), 4, 49.28, "Cursor position after redo");
+
+    historyOutput = captureOutput([&buffer]()
+                                  { buffer.printHistory(); });
+
+    expectedHistory = "[(insert, 0, 9, Hello_DSA), (move, 9, 0, J), (insert, 0, 18, Hello_Assignment_2), (insert, 18, 30, DSA_is_here!), (move, 18, 17, L), (move, 30, 4, J), (replace, 4, 30, o_As), (move, 30, 4, J), (delete, 4, 4, Hello_This)]\n";
+    assertEqual(historyOutput, expectedHistory, 49.29, "History output");
     buffer.clear();
-    assertEqual(buffer.getContent(), "", 49.16, "Clear operation test");
-    assertEqual(buffer.getCursorPos(), 0, 49.17, "Cursor position after clear");
-
-    evaluateTests(17);
+    assertEqual(buffer.getContent(), "", 49.30, "Content after clear");
+    assertEqual(buffer.getCursorPos(), 0, 49.31, "Cursor position after clear");
+    evaluateTests(32);
 }
 
 void run_tests()
@@ -1559,7 +1641,7 @@ void run_tests()
 
     cout << "=" << string(50, '=') << endl;
     cout << COLOR_PURPLE << "All tests completed!" << COLOR_RESET << endl;
-    cout << "You have passed " << COLOR_GREEN << countOfPassedTests << COLOR_RESET << "/" << 48 << " testcases!" << endl;
+    cout << "You have passed " << COLOR_GREEN << countOfPassedTests << COLOR_RESET << "/" << 49 << " testcases!" << endl;
 }
 
 int main(int argc, char **argv)

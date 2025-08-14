@@ -12,6 +12,7 @@
         "exception": "cpp",
         "iomanip": "cpp",
         "iosfwd": "cpp",
-        "text_encoding": "cpp"
+        "text_encoding": "cpp",
+        "stdexcept": "cpp"
     }
 }
