@@ -1595,6 +1595,7 @@ void sample_50()
     rope.deleteRange(10, 1);
     assertEqual(rope.length(), 10, 50.2, "Get length after delete");
     assertEqual(rope.substring(0, 10), "!WorldHell", 50.3, "Get substring at last");
+    evaluateTests(3);
 }
 
 void run_tests()
@@ -1654,7 +1655,7 @@ void run_tests()
 
     cout << "=" << string(50, '=') << endl;
     cout << COLOR_PURPLE << "All tests completed!" << COLOR_RESET << endl;
-    cout << "You have passed " << COLOR_GREEN << countOfPassedTests << COLOR_RESET << "/" << 49 << " testcases!" << endl;
+    cout << "You have passed " << COLOR_GREEN << countOfPassedTests << COLOR_RESET << "/" << 50 << " testcases!" << endl;
 }
 
 int main(int argc, char **argv)
