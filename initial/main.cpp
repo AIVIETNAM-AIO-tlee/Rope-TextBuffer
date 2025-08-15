@@ -1585,6 +1585,18 @@ void sample_49()
     evaluateTests(32);
 }
 
+void sample_50()
+{
+    Rope rope;
+    rope.insert(0, "Hello");
+    rope.insert(0, "World");
+    rope.insert(0, "!");
+    assertEqual(rope.substring(10, 1), "o", 50.1, "Get substring at last");
+    rope.deleteRange(10, 1);
+    assertEqual(rope.length(), 10, 50.2, "Get length after delete");
+    assertEqual(rope.substring(0, 10), "!WorldHell", 50.3, "Get substring at last");
+}
+
 void run_tests()
 {
     cout << "=" << string(50, '=') << endl;
@@ -1638,6 +1650,7 @@ void run_tests()
     sample_47();
     sample_48();
     sample_49();
+    sample_50();
 
     cout << "=" << string(50, '=') << endl;
     cout << COLOR_PURPLE << "All tests completed!" << COLOR_RESET << endl;

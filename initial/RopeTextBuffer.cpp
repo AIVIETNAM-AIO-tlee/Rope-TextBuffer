@@ -165,7 +165,7 @@ void Rope::insert(int index, const string &s)
 
 void Rope::deleteRange(int start, int length)
 {
-    if (start < 0 || start > this->length())
+    if (start < 0 || start >= this->length())
     {
         throwOutOfIndex();
     }
