@@ -5,7 +5,7 @@
 
 ---
 
-## 📌 Objective
+## Objective
 
 This assignment aims to help students:
 - Master advanced C++ programming.
@@ -14,7 +14,7 @@ This assignment aims to help students:
 
 ---
 
-## 📘 Overview
+## Overview
 
 Rope is a data structure designed for efficiently managing and manipulating long strings, especially when modifications often occur in the middle. This assignment focuses on:
 - Implementing Rope as a binary tree with internal and leaf nodes.
@@ -23,7 +23,7 @@ Rope is a data structure designed for efficiently managing and manipulating long
 
 ---
 
-## 🧩 Project Structure
+## Project Structure
 
 - `main.cpp` and `main.h`: Provided by instructor (do **not modify**).
 - `RopeTextBuffer.h`: Your implementation header file.
@@ -31,21 +31,21 @@ Rope is a data structure designed for efficiently managing and manipulating long
 
 ---
 
-## 🧠 Key Classes
+## Key Classes
 
-### ✅ Rope
+### Rope
 Represents the Rope tree with operations like:
 - `insert`, `deleteRange`, `charAt`, `substring`, etc.
 - Maintains **AVL balance** after edits.
 - Supports **O(log n)** operations through tree traversal and balancing.
 
-### ✅ RopeTextBuffer
+### RopeTextBuffer
 Wraps the Rope to simulate a text editor:
 - Cursor-based editing with insert, delete, move, replace.
 - Undo/redo operations.
 - Find (first and all) characters.
 
-### ✅ HistoryManager
+### HistoryManager
 Handles:
 - Action history tracking (insert, delete, move, replace).
 - Undo/redo with saved cursor positions and content.
@@ -53,23 +53,21 @@ Handles:
 
 ---
 
-## 🏷️ Compilation
+## Compilation
 
-**📋 Instructions:**
+**Instructions:**
 
-1️⃣ **Navigate to the project directory:**
+1. **Navigate to the project directory:**
 ```bash
 cd path/to/Rope-TextBuffer-master
 ```
 
-2️⃣ **Compile the project:**
+2. **Compile the project:**
 ```bash
 g++ -o main main.cpp RopeTextBuffer.cpp -I . -std=c++17
 ```
 
-3️⃣ **Run the application:**
+3. **Run the application:**
 ```bash
 ./main
 ```
-
-🎉 **Enjoy testing your Text Buffer implementation!**
